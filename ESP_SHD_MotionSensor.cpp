@@ -15,14 +15,23 @@ bool ShdMotionSensor::handleMqttRequest(char* _topic, byte* _payload, unsigned i
 }
 
 void ShdMotionSensor::pinChange(){
-  Serial.print("Pin changed: ");
   bool motionSensorStatus = digitalRead(pin);
-  Serial.println(motionSensorStatus);
-  Serial.println();
-  // if (motionSensorStatus && !motionDeteced) {
-  //   mqttClient.publish("test1", "true");
-  // } else if (!motionSensorStatus && motionDeteced) {
-  //   mqttClient.publish("test1", "false");
-  // }
+  if (motionSensorStatus && !motionDeteced) {
+    Serial.print("Motion detected. ");
+    if (mqttClient.publish("test1", "true")) {
+      Serial.print("Published via MQTT. ");
+    } else {
+      Serial.print("Could not publish via MQTT. ");
+    }
+    Serial.println();
+  } else if (!motionSensorStatus && motionDeteced) {
+    Serial.print("No motion detected.");
+    if (mqttClient.publish("test1", "false")) {
+      Serial.print("Published via MQTT. ");
+    } else {
+      Serial.print("Could not publish via MQTT. ");
+    }
+    Serial.println();
+  }
   motionDeteced = motionSensorStatus;
 }

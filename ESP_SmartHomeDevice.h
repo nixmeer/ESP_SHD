@@ -1,6 +1,9 @@
 #ifndef ESP_SMART_HOME_DEVICE_H
 #define ESP_SMART_HOME_DEVICE_H
 
+extern "C" {
+  #include "user_interface.h"
+}
 #include "PubSubClient.h"
 #include <ESP8266WiFi.h>
 #include "WiFiClient.h"
@@ -23,6 +26,8 @@ protected:
   static WiFiClient wifiClient;
   static char* location;
   static char* title;
+  static void loop(void *pArg);
+  static os_timer_t loopTimer;
 };
 
 #endif

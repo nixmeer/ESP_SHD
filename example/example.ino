@@ -6,13 +6,11 @@
 
 #define MODUL_NAME "SHD TEST 1"
 
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
-
 void setup() {
   Serial.begin(115200);
   Serial.println("Serial started.");
 
+  WiFi.mode(WIFI_STA);
   WiFiManager wifiManager;
   wifiManager.autoConnect();
 
