@@ -16,7 +16,7 @@ void setup() {
 
   setupArduinoOta();
 
-  ESP_SmartHomeDevice::init("192.168.178.32", 1883, "Flur", "Deckenleuchte");
+  ESP_SmartHomeDevice::init("192.168.178.37", 1883, "Flur/Spiegel");
 
   new ShdMotionSensor(10);
 

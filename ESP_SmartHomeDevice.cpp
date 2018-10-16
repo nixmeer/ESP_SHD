@@ -4,8 +4,7 @@ ESP_SmartHomeDevice* ESP_SmartHomeDevice::shds[MAX_SHDS];
 PubSubClient ESP_SmartHomeDevice::mqttClient;
 WiFiClient ESP_SmartHomeDevice::wifiClient;
 int ESP_SmartHomeDevice::numberOfShds = 0;
-char* ESP_SmartHomeDevice::title;
-char* ESP_SmartHomeDevice::location;
+char* ESP_SmartHomeDevice::name;
 os_timer_t ESP_SmartHomeDevice::loopTimer;
 
 ESP_SmartHomeDevice::ESP_SmartHomeDevice(){
@@ -17,20 +16,24 @@ ESP_SmartHomeDevice::ESP_SmartHomeDevice(){
   Serial.println("SHD: New device registered. ");
 }
 
-void ESP_SmartHomeDevice::init(char* _address, uint16_t _port, char* _location, char* _title){
+void ESP_SmartHomeDevice::init(char* _address, uint16_t _port, char* _name){
 
   numberOfShds = 0;
 
-  location = _location;
-  title = _title;
+  name = _name;
 
-  IPAddress serverIp(192, 168, 178, 31);
   mqttClient.setClient(wifiClient);
-  mqttClient.setServer("spieglein", 1883);
+  mqttClient.setServer(_address, _port);
   mqttClient.setCallback(ESP_SmartHomeDevice::mqttCallback);
 
+  if (mqttClient.connect(name)) {
+    Serial.println("Now successfully connected to MQTT server. ");
+  } else {
+    Serial.println("Connecting to MQTT server failed. ");
+  }
+
   os_timer_setfn(&ESP_SmartHomeDevice::loopTimer, &ESP_SmartHomeDevice::loop, NULL);
-  os_timer_arm(&ESP_SmartHomeDevice::loopTimer, 1000, true);
+  os_timer_arm(&ESP_SmartHomeDevice::loopTimer, 500, true);
 }
 
 void ESP_SmartHomeDevice::mqttCallback(char* _topic, byte* _payload, unsigned int _length){
@@ -42,18 +45,22 @@ void ESP_SmartHomeDevice::mqttCallback(char* _topic, byte* _payload, unsigned in
 }
 
 void ESP_SmartHomeDevice::loop(void *pArg){
-  // (re-)connect mqtt client:
-  if (!mqttClient.connected()) {
-    Serial.print("MQTT not connected. ");
-    String clientId = location;
-    clientId += "/";
-    clientId += title;
-    if (mqttClient.connect(clientId.c_str())) {
-      Serial.println("Now successfully connected. ");
+
+  // TODO: (re-)connecting doesn't work here, even though it's the same code as in init():
+  if (!mqttClient.loop()) {
+    Serial.print("MQTT not connected. Error code: ");
+    Serial.print(mqttClient.state());
+    Serial.print(", ");
+    mqttClient.disconnect();
+    Serial.print(mqttClient.state());
+    Serial.print(", ");
+    mqttClient.connect(name);
+    Serial.print(mqttClient.state());
+    Serial.print(". ");
+    if (mqttClient.connected()) {
+      Serial.println("Now successfully connected to MQTT server. ");
     } else {
-      Serial.println("Reconnecting failed. ");
+      Serial.println("Connecting to MQTT server failed. ");
     }
-  } else { // run mqtt client loop:
-    mqttClient.loop();
   }
 }

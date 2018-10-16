@@ -9,10 +9,10 @@ public:
   ShdMotionSensor(uint8_t _pin);
 private:
   bool handleMqttRequest(char* _topic, byte* _payload, unsigned int _length);
-  char* name = "Temperatur";
   uint8_t pin;
   bool motionDeteced;
   void pinChange();
+  char pubTopic[50];
 };
 
 #endif

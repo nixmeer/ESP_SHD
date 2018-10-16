@@ -16,7 +16,7 @@ extern "C" {
 class ESP_SmartHomeDevice {
 public:
   ESP_SmartHomeDevice();
-  static void init(char* _mqttServerAddress, uint16_t _port, char* _location, char* title);
+  static void init(char* _mqttServerAddress, uint16_t _port, char* _name);
   static void mqttCallback(char* _topic, byte* _payload, unsigned int _length);
   virtual bool handleMqttRequest(char* _topic, byte* _payload, unsigned int _length) = 0;
 protected:
@@ -24,8 +24,7 @@ protected:
   static int numberOfShds;
   static PubSubClient mqttClient;
   static WiFiClient wifiClient;
-  static char* location;
-  static char* title;
+  static char* name;
   static void loop(void *pArg);
   static os_timer_t loopTimer;
 };
