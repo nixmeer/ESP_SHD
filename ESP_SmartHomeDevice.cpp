@@ -48,16 +48,7 @@ void ESP_SmartHomeDevice::loop(void *pArg){
 
   // TODO: (re-)connecting doesn't work here, even though it's the same code as in init():
   if (!mqttClient.loop()) {
-    Serial.print("MQTT not connected. Error code: ");
-    Serial.print(mqttClient.state());
-    Serial.print(", ");
-    mqttClient.disconnect();
-    Serial.print(mqttClient.state());
-    Serial.print(", ");
-    mqttClient.connect(name);
-    Serial.print(mqttClient.state());
-    Serial.print(". ");
-    if (mqttClient.connected()) {
+    if (mqttClient.connect(name)) {
       Serial.println("Now successfully connected to MQTT server. ");
     } else {
       Serial.println("Connecting to MQTT server failed. ");
