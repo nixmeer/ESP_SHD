@@ -53,6 +53,5 @@ void ESP_SmartHomeDevice::loop(void *pArg){
     } else {
       Serial.println("Connecting to MQTT server failed. ");
     }
-    Test;
   }
 }
