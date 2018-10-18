@@ -4,7 +4,7 @@
 #include "ESP_SmartHomeDevice.h"
 #include "ESP_SHD_MotionSensor.h"
 
-#define MODUL_NAME "SHD TEST 1"
+#define MODUL_NAME "Flur/Spiegel"
 
 void setup() {
   Serial.begin(115200);
@@ -16,7 +16,7 @@ void setup() {
 
   setupArduinoOta();
 
-  ESP_SmartHomeDevice::init("192.168.178.37", 1883, "Flur/Spiegel");
+  ESP_SmartHomeDevice::init("192.168.178.37", 1883, MODUL_NAME);
 
   new ShdMotionSensor(10);
 
@@ -25,6 +25,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   ArduinoOTA.handle();
+  // ESP_SmartHomeDevice::loop();
 }
 
 void setupArduinoOta(){
