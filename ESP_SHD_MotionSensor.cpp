@@ -6,7 +6,7 @@ ShdMotionSensor::ShdMotionSensor(uint8_t _pin){
   // prepare pin and attach interrupt:
   pin = _pin;
   pinMode(pin, INPUT);
-  attachInterrupt(pin, std::bind(&ShdMotionSensor::pinChange,this), CHANGE);
+  attachInterrupt(pin, std::bind(&ShdMotionSensor::pinChange, this), CHANGE);
 
   // initialize variables
   motionDeteced = false;
@@ -20,6 +20,10 @@ ShdMotionSensor::ShdMotionSensor(uint8_t _pin){
 
 bool ShdMotionSensor::handleMqttRequest(char* _topic, byte* _payload, unsigned int _length){
   return false;
+}
+
+void ShdMotionSensor::timer5msHandler(){
+  return;
 }
 
 void ShdMotionSensor::pinChange(){

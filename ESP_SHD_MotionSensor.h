@@ -13,6 +13,7 @@ private:
   bool motionDeteced;
   void pinChange();
   char pubTopic[50];
+  void timer5msHandler();
 };
 
 #endif

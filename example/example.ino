@@ -3,6 +3,7 @@
 #include <ArduinoOTA.h>
 #include "ESP_SmartHomeDevice.h"
 #include "ESP_SHD_MotionSensor.h"
+#include "ESP_SHD_TemperatureSensor.h"
 
 #define MODUL_NAME "Flur/Spiegel"
 
@@ -13,19 +14,23 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFiManager wifiManager;
   wifiManager.autoConnect();
+  WiFi.hostname(MODUL_NAME);
 
   setupArduinoOta();
 
-  ESP_SmartHomeDevice::init("192.168.178.37", 1883, MODUL_NAME);
+  ESP_SmartHomeDevice::init(MODUL_NAME);
 
   new ShdMotionSensor(10);
+  new ShdTemperatureSensor();
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
   ArduinoOTA.handle();
-  // ESP_SmartHomeDevice::loop();
+
+  // remove, if MQTT reconnect works with timer
+  ESP_SmartHomeDevice::loop();
 }
 
 void setupArduinoOta(){
