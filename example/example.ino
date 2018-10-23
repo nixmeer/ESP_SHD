@@ -5,7 +5,7 @@
 #include "ESP_SHD_MotionSensor.h"
 #include "ESP_SHD_TemperatureSensor.h"
 
-#define MODUL_NAME "Flur/Spiegel"
+#define MODUL_NAME "TEST"
 
 void setup() {
   Serial.begin(115200);

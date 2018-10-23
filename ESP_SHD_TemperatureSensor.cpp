@@ -30,7 +30,7 @@ void ShdTemperatureSensor::timer5msHandler(){
 void ShdTemperatureSensor::publishTemperature() {
 
   int adcValue = analogRead(A0);
-  float temperature = 0.07326 * adcValue - 36.9767;
+  float temperature = 0.07326 * adcValue - 39.9767;
 
   for (size_t i = 0; i < 10; i++) {
     message[i] = 0;
@@ -42,7 +42,7 @@ void ShdTemperatureSensor::publishTemperature() {
     Serial.print(pubTopic);
     Serial.print(" at ");
     Serial.print(millis());
-    Serial.print(": ");
+    Serial.print(" ms: ");
     Serial.println(message);
   }
 }
