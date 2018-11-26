@@ -20,7 +20,7 @@ void setup() {
 
   ESP_SmartHomeDevice::init(MODUL_NAME);
 
-  new ShdMotionSensor(10);
+  new ShdMotionSensor(5);
   new ShdTemperatureSensor();
 
 }

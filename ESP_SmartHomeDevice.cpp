@@ -19,7 +19,7 @@ ESP_SmartHomeDevice::ESP_SmartHomeDevice(){
   Serial.println("SHD: New device registered. ");
 }
 
-void ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, char* _name){
+void ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, char* _name){ // TODO: Char * als const?
 
   numberOfShds = 0;
 
