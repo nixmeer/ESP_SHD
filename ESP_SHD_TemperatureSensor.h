@@ -13,7 +13,7 @@ class ShdTemperatureSensor : public ESP_SmartHomeDevice {
 public:
   ShdTemperatureSensor();
 private:
-  bool handleMqttRequest(char* _topic, byte* _payload, unsigned int _length);
+  bool handleMqttRequest(char* _topic, unsigned char* _payload, unsigned int _length);
   char pubTopic[50];
   char message[10];
   os_timer_t timer;

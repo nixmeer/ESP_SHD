@@ -15,7 +15,7 @@ ShdTemperatureSensor::ShdTemperatureSensor(){
   Serial.println();
 }
 
-bool ShdTemperatureSensor::handleMqttRequest(char* _topic, byte* _payload, unsigned int _length){
+bool ShdTemperatureSensor::handleMqttRequest(char* _topic, unsigned char* _payload, unsigned int _length){
   return false;
 }
 

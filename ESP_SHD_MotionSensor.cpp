@@ -18,7 +18,7 @@ ShdMotionSensor::ShdMotionSensor(uint8_t _pin){
   Serial.println();
 }
 
-bool ShdMotionSensor::handleMqttRequest(char* _topic, byte* _payload, unsigned int _length){
+bool ShdMotionSensor::handleMqttRequest(char* _topic, unsigned char* _payload, unsigned int _length){
   return false;
 }
 
