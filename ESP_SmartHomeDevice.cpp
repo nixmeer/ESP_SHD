@@ -60,7 +60,7 @@ void ESP_SmartHomeDevice::init(char* _name){
 
 }
 
-void ESP_SmartHomeDevice::mqttCallback(char* _topic, byte* _payload, unsigned int _length){
+void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, unsigned int _length){
   for (uint8_t i = 0; i < numberOfShds; i++) {
     if(shds[i]->handleMqttRequest(_topic, _payload, _length)){
        break;
