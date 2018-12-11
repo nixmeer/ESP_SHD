@@ -1,6 +1,8 @@
 #include "ESP_SHD_TemperatureSensor.h"
 #include <FunctionalInterrupt.h>
 
+#define DEBUG 0
+
 ShdTemperatureSensor::ShdTemperatureSensor(){
   timerCounter = 0;
 
@@ -38,11 +40,17 @@ void ShdTemperatureSensor::publishTemperature() {
 
   dtostrf(temperature, 3, 1, message);
   if (mqttClient.publish(pubTopic, message)) {
+    #if DEBUG > 1
     Serial.print("Temperature published to ");
     Serial.print(pubTopic);
     Serial.print(" at ");
     Serial.print(millis());
     Serial.print(" ms: ");
     Serial.println(message);
+    #endif
   }
+}
+
+void ShdTemperatureSensor::resubscribe() {
+  return;
 }

@@ -4,6 +4,7 @@
 #include "ESP_SmartHomeDevice.h"
 #include "ESP_SHD_MotionSensor.h"
 #include "ESP_SHD_TemperatureSensor.h"
+#include "ESP_SHD_WS2812bStrip.h"
 
 #define MODUL_NAME "TEST"
 
@@ -16,6 +17,8 @@ void setup() {
   wifiManager.autoConnect();
   WiFi.hostname(MODUL_NAME);
 
+  delay(1000);
+
   setupArduinoOta();
 
   ESP_SmartHomeDevice::init(MODUL_NAME);
@@ -23,6 +26,9 @@ void setup() {
   new ShdMotionSensor(5);
   new ShdTemperatureSensor();
 
+  ShdWs2812bStrip::initStrip(10, 50);
+  new ShdWs2812bStrip(1, 10, 0, IGNITION_FORWARD, 3, 5, "Test1");
+  //new ShdWs2812bStrip(6, 10, 0, IGNITION_FORWARD, 3, 5, "Test2");
 }
 
 void loop() {

@@ -61,6 +61,11 @@ void ESP_SmartHomeDevice::init(char* _name){
 }
 
 void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, unsigned int _length){
+  #if DEBUG >= 0
+  Serial.print("MQTT: callback topic: ");
+  Serial.print(_topic);
+  Serial.println(".");
+  #endif
   for (uint8_t i = 0; i < numberOfShds; i++) {
     if(shds[i]->handleMqttRequest(_topic, _payload, _length)){
        break;
@@ -93,6 +98,9 @@ void ESP_SmartHomeDevice::reconnect(){
     mqttClient.setServer("192.168.178.37", 1883);
     if (mqttClient.connect(name)) {
       Serial.println("Now successfully connected to MQTT server. ");
+      for (size_t i = 0; i < numberOfShds; i++) {
+        shds[i]->resubscribe();
+      }
     }
     else {
       Serial.print("Connecting to MQTT server failed. Last connection attempt ");

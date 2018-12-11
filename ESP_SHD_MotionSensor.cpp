@@ -47,3 +47,8 @@ void ShdMotionSensor::pinChange(){
   }
   motionDeteced = motionSensorStatus;
 }
+
+
+void ShdMotionSensor::resubscribe() {
+  return;
+}

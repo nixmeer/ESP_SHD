@@ -16,7 +16,7 @@ enum ignitionDirection { IGNITION_FORWARD, IGNITION_BACKWARD, IGNITION_BOTH };
 
 class ShdWs2812bStrip : public ESP_SmartHomeDevice {
 public:
-  static void initStrip(int _numberOfLeds);
+  static void initStrip(uint16_t _numberOfLeds, uint8_t _updateInterval);
 
   ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength, const char * _stripName);
 private:
@@ -45,20 +45,22 @@ private:
   uint16_t ignitionCounter;
   uint16_t ignitionPoint;
   char subTopicColor[50], pubTopicColor[50], subTopicState[50], pubTopicState[50], pubTopicBrightness[50], payloadBuffer[50];
-
+  ignitionDirection direction;
 
   // functions for each section:
   bool handleMqttRequest(char* _topic, byte* _payload, unsigned int _length);
   void setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _newBlue);
   void timer5msHandler();
   void updateCRGBs();
-
-  void (ShdWs2812bStrip::*ignitionFunction)();
+  //void (ShdWs2812bStrip::*ignitionFunction)();
+  void callIgnitionFunction();
   void igniteBoth();
   void igniteSingleForward();
   void igniteSingleBackward();
   bool fillLedWithNewColor(uint16_t _ledIndex);
+  bool fillLedWithNewColor(uint16_t _ledIndex1, uint16_t _ledIndex2);
   void clearPayloadBuffer();
+  void resubscribe();
 };
 
 #endif

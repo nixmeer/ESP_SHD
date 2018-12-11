@@ -26,6 +26,7 @@ public:
 protected:
   virtual bool handleMqttRequest(char* _topic, unsigned char* _payload, unsigned int _length) = 0;
   virtual void timer5msHandler() = 0;
+  virtual void resubscribe() = 0;
   static ESP_SmartHomeDevice* shds[MAX_SHDS];
   static int numberOfShds;
   static PubSubClient mqttClient;
