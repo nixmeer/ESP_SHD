@@ -6,7 +6,7 @@
 #include "ESP_SHD_TemperatureSensor.h"
 #include "ESP_SHD_WS2812bStrip.h"
 
-#define MODUL_NAME "TEST"
+#define MODUL_NAME "Flur/Spiegel"
 
 void setup() {
   Serial.begin(115200);
@@ -26,8 +26,8 @@ void setup() {
   new ShdMotionSensor(5);
   new ShdTemperatureSensor();
 
-  ShdWs2812bStrip::initStrip(10, 50);
-  new ShdWs2812bStrip(1, 10, 0, IGNITION_FORWARD, 3, 5, "Test1");
+  ShdWs2812bStrip::initStrip(144, 25);
+  new ShdWs2812bStrip(1, 144, 72, IGNITION_BOTH, 5, 50);
   //new ShdWs2812bStrip(6, 10, 0, IGNITION_FORWARD, 3, 5, "Test2");
 }
 

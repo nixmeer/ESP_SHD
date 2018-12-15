@@ -53,15 +53,19 @@ void ESP_SmartHomeDevice::init(char* _name){
   int n = MDNS.queryService("mqtt", "tcp");
   if(n == 1){
     ESP_SmartHomeDevice::init(MDNS.hostname(0).c_str(), MDNS.port(0), _name);
+  } else if (n == 0) {
+    Serial.println("0 mqtt broker found. Resetting this device now.");
+    ESP.reset();
   } else {
     Serial.print(n);
-    Serial.println(" broker found, didn't know which one to choose");
+    Serial.println(" mqtt broker found, didn't know which one to choose. Resetting this device now.");
+    ESP.reset();
   }
 
 }
 
 void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, unsigned int _length){
-  #if DEBUG >= 0
+  #if DEBUG >= 1
   Serial.print("MQTT: callback topic: ");
   Serial.print(_topic);
   Serial.println(".");
@@ -70,6 +74,12 @@ void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, un
     if(shds[i]->handleMqttRequest(_topic, _payload, _length)){
        break;
     }
+  }
+  // clear payload:
+  uint16_t i = 0;
+  while (_payload[i] != 0) {
+    _payload[i] = 0;
+    i++;
   }
 }
 

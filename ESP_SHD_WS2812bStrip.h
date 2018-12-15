@@ -16,9 +16,9 @@ enum ignitionDirection { IGNITION_FORWARD, IGNITION_BACKWARD, IGNITION_BOTH };
 
 class ShdWs2812bStrip : public ESP_SmartHomeDevice {
 public:
-  static void initStrip(uint16_t _numberOfLeds, uint8_t _updateInterval);
+  static void initStrip(uint16_t _numberOfLeds, uint16_t _updateInterval);
 
-  ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength, const char * _stripName);
+  ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
 private:
   // static variables and functions for the entire strip:
   static void show();
@@ -33,9 +33,9 @@ private:
 
   // variables for each section
   uint8_t sectionNumber;
+  uint16_t sectionLength;
   uint8_t firstLed, lastLed;
-  uint16_t setPoint[3];
-  uint16_t shownValue[3], savedValue[3];
+  uint16_t setPoint[3], shownValue[3], savedValue[3];
   int16_t delta[3];
   uint8_t flankLength;
   uint8_t hopsPerShow;
@@ -54,9 +54,8 @@ private:
   void updateCRGBs();
   //void (ShdWs2812bStrip::*ignitionFunction)();
   void callIgnitionFunction();
-  void igniteBoth();
-  void igniteSingleForward();
-  void igniteSingleBackward();
+  void igniteBothDir();
+  void igniteSingleDir();
   bool fillLedWithNewColor(uint16_t _ledIndex);
   bool fillLedWithNewColor(uint16_t _ledIndex1, uint16_t _ledIndex2);
   void clearPayloadBuffer();
