@@ -24,7 +24,7 @@ public:
   static void mqttCallback(char* _topic, unsigned char* _payload, unsigned int _length);
   static void loop();//void *pArg);
 protected:
-  virtual bool handleMqttRequest(char* _topic, unsigned char* _payload, unsigned int _length) = 0;
+  virtual bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length) = 0;
   virtual void timer5msHandler() = 0;
   virtual void resubscribe() = 0;
   static ESP_SmartHomeDevice* shds[MAX_SHDS];

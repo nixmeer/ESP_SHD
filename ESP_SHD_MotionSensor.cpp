@@ -10,7 +10,7 @@ ShdMotionSensor::ShdMotionSensor(uint8_t _pin){
 
   // initialize variables
   motionDeteced = false;
-  snprintf (pubTopic, 50, "%s/Bewegung", name);
+  snprintf (pubTopic, 50, "%s/Motion", name);
 
   // debug output:
   Serial.print("New motion sensor registered. It publishes to ");
@@ -18,7 +18,7 @@ ShdMotionSensor::ShdMotionSensor(uint8_t _pin){
   Serial.println();
 }
 
-bool ShdMotionSensor::handleMqttRequest(char* _topic, unsigned char* _payload, unsigned int _length){
+bool ShdMotionSensor::handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length){
   return false;
 }
 

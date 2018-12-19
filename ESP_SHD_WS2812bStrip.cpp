@@ -1,7 +1,9 @@
 #include "ESP_SHD_WS2812bStrip.h"
 #include "FastLED.h"
+#include <FunctionalInterrupt.h>
 
 #define DEBUG 0
+#define DEBOUNCE_MILLIS 500
 
 uint16_t ShdWs2812bStrip::millisLastStripUpdate;
 uint16_t ShdWs2812bStrip::millisStripUpdateInterval;
@@ -27,8 +29,9 @@ void ShdWs2812bStrip::show(){
     return;
   }
 
+
   // see if it's time to update the strip:
-  uint16_t currentMillis = millis();
+  uint32_t currentMillis = millis();
 
   uint32_t millisSinceLastUpdate = (uint32_t)(currentMillis - millisLastStripUpdate);
 
@@ -83,6 +86,7 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
   sections[numberOfSections] = this;
   numberOfSections++;
   sectionNumber = numberOfSections;
+  buttonDetached = false;
 
   // check if first and last LED number are plausible:
   if (_firstLed <= _lastLed && _firstLed > 0 && _lastLed <= numberOfLeds) {
@@ -397,6 +401,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   Serial.println("MQTT: State published.");
   #endif
 
+  // publish new color:
   clearPayloadBuffer();
   snprintf (payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
   mqttClient.publish(pubTopicColor, payloadBuffer);
@@ -405,6 +410,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   Serial.println(payloadBuffer);
   #endif
 
+  // publish brightness:
   clearPayloadBuffer();
   uint16_t brightness = (max(max(setPoint[0], setPoint[1]), setPoint[2]) / 652);
   snprintf (payloadBuffer, 50, "%d", brightness);
@@ -475,7 +481,7 @@ bool ShdWs2812bStrip::fillLedWithNewColor(uint16_t _ledIndex1, uint16_t _ledInde
   return flankOver;
 }
 
-bool ShdWs2812bStrip::handleMqttRequest(char* _topic, unsigned char* _payload, unsigned int _length){
+bool ShdWs2812bStrip::handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length){
   #if DEBUG >= 1
   Serial.print("MQTT topic: ");
   Serial.print(_topic);

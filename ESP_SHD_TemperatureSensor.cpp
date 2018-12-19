@@ -6,10 +6,7 @@
 ShdTemperatureSensor::ShdTemperatureSensor(){
   timerCounter = 0;
 
-  snprintf (pubTopic, 50, "%s/Temperatur", name);
-
-  // os_timer_setfn(&this->timer, std::bind(&ShdTemperatureSensor::publishTemperature,this), NULL);
-  // os_timer_arm(&this->timer, PUBLISH_TIME_IN_MS, true);
+  snprintf (pubTopic, 50, "%s/Temperature", name);
 
   // debug output:
   Serial.print("New temperature sensor registered. It publishes to ");
@@ -17,7 +14,7 @@ ShdTemperatureSensor::ShdTemperatureSensor(){
   Serial.println();
 }
 
-bool ShdTemperatureSensor::handleMqttRequest(char* _topic, unsigned char* _payload, unsigned int _length){
+bool ShdTemperatureSensor::handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length){
   return false;
 }
 
