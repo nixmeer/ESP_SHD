@@ -31,4 +31,20 @@ To add a motion sensor, just call "new ShdMotionSensor(5)". It publishes it's st
 To add a motion sensor, just call "new ShdMotionSensor(5)". It publishes it's status to "_name/Temperature" (_name = argument of ESP_SmartHomeDevice::init())
 
 # WS2812b strip
-Call 
+Call
+
+# mosquitto broker on raspberry pi
+
+You can use any mqtt broker for this project. In order to have all devices run stable and reconnect after a loss of power, it's recommended to use mDNS to expose the mqtt broker service to the network so all SHDs can connect to it. After installing mosquitto on the raspberry pi, call "sudo nano /etc/avahi/services/mqtt.service". Fill the following:
+
+"<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+ <name replace-wildcards="yes">MQTT on %h</name>
+  <service>
+   <type>_mqtt._tcp</type>
+   <port>1883</port>
+  </service>
+</service-group>"
+
+Then reboot. SHDs should find the broker now automatically.

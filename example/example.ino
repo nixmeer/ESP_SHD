@@ -5,6 +5,7 @@
 #include "ESP_SHD_MotionSensor.h"
 #include "ESP_SHD_TemperatureSensor.h"
 #include "ESP_SHD_WS2812bStrip.h"
+#include "ESP_SHD_Button.h"
 
 #define MODUL_NAME "Flur/Spiegel"
 
@@ -23,12 +24,14 @@ void setup() {
 
   ESP_SmartHomeDevice::init(MODUL_NAME);
 
-  new ShdMotionSensor(5);
+  // new ShdMotionSensor(5);
   new ShdTemperatureSensor();
 
   ShdWs2812bStrip::initStrip(144, 25);
-  new ShdWs2812bStrip(1, 144, 72, IGNITION_BOTH, 5, 50);
-  //new ShdWs2812bStrip(6, 10, 0, IGNITION_FORWARD, 3, 5, "Test2");
+  new ShdWs2812bStrip(1, 10, 5, IGNITION_BOTH, 1, 5);
+  // new ShdWs2812bStrip(6, 10, 0, IGNITION_FORWARD, 3, 5, "Test2");
+
+  new ShdButton(5, true, 20, 500, 1000);
 }
 
 void loop() {
