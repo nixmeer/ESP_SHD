@@ -69,7 +69,8 @@ To add a new button, call `new ShdButton(uint8_t _pin, bool _lowActive, uint32_t
 
 You can use any mqtt broker with this code. In order to have all devices run stable and reconnect after a loss of power, it's recommended to use mDNS to expose the a mqtt broker service to the network, so all SHDs can automatically connect to it. After installing mosquitto on the raspberry pi, call `sudo nano /etc/avahi/services/mqtt.service`. Fill the following:
 
-`<?xml version="1.0" standalone='no'?>
+```
+<?xml version="1.0" standalone='no'?>
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
  <name replace-wildcards="yes">MQTT on %h</name>
@@ -77,6 +78,7 @@ You can use any mqtt broker with this code. In order to have all devices run sta
    <type>_mqtt._tcp</type>
    <port>1883</port>
   </service>
-</service-group>`
+</service-group>
+```
 
 Then reboot. SHDs should find the broker now automatically.
