@@ -19,12 +19,48 @@ ESP_SmartHomeDevice::ESP_SmartHomeDevice(){
   Serial.println("SHD: New device registered. ");
 }
 
-void ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, char* _name){ // TODO: Char * als const?
-
+void ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, char* _name){
   numberOfShds = 0;
-
   name = _name;
 
+  initWifi();
+  initMqtt(_mqttServerAddress, _port, _name);
+}
+
+void ESP_SmartHomeDevice::initWifi(){
+    WiFi.mode(WIFI_STA);
+    WiFiManager wifiManager;
+    wifiManager.autoConnect();
+    WiFi.hostname(MODUL_NAME);
+}
+
+void ESP_SmartHomeDevice::init(char* _name){
+
+  initWifi();
+
+  // find mqtt broker using mDNS:
+  if (!MDNS.begin(_name)) {
+    Serial.println("Trying to connect to mDNS.");
+    while (!MDNS.begin(_name)) {
+      Serial.print(".");
+      delay(200);
+    }
+  }
+
+  int n = MDNS.queryService("mqtt", "tcp");
+  if(n == 1){ // if 1 mqtt service is found, call normal init()
+    ESP_SmartHomeDevice::initMqtt(MDNS.hostname(0).c_str(), MDNS.port(0), _name);
+  } else if (n == 0) {
+    Serial.println("0 mqtt broker found. Resetting this device now.");
+    ESP.reset();
+  } else {
+    Serial.print(n);
+    Serial.println(" mqtt broker found, didn't know which one to choose. Resetting this device now.");
+    ESP.reset();
+  }
+}
+
+void ESP_SmartHomeDevice::initMqtt(const char* _mqttServerAddress, uint16_t _port, char* _name){ // TODO: Char * als const?
   mqttClient.setClient(wifiClient);
   mqttClient.setServer(_mqttServerAddress, _port);
   mqttClient.setCallback(ESP_SmartHomeDevice::mqttCallback);
@@ -40,29 +76,6 @@ void ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, c
   // os_timer_arm(&ESP_SmartHomeDevice::loopTimer, 5, true);
 }
 
-void ESP_SmartHomeDevice::init(char* _name){
-
-  if (!MDNS.begin(_name)) {
-    Serial.println("Trying to connect to mDNS.");
-    while (!MDNS.begin(_name)) {
-      Serial.print(".");
-      delay(200);
-    }
-  }
-
-  int n = MDNS.queryService("mqtt", "tcp");
-  if(n == 1){
-    ESP_SmartHomeDevice::init(MDNS.hostname(0).c_str(), MDNS.port(0), _name);
-  } else if (n == 0) {
-    Serial.println("0 mqtt broker found. Resetting this device now.");
-    ESP.reset();
-  } else {
-    Serial.print(n);
-    Serial.println(" mqtt broker found, didn't know which one to choose. Resetting this device now.");
-    ESP.reset();
-  }
-
-}
 
 void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, unsigned int _length){
   #if DEBUG >= 1

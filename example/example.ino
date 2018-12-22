@@ -13,23 +13,20 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Serial started.");
 
-  WiFi.mode(WIFI_STA);
-  WiFiManager wifiManager;
-  wifiManager.autoConnect();
-  WiFi.hostname(MODUL_NAME);
-
-  delay(1000);
 
   setupArduinoOta();
 
   ESP_SmartHomeDevice::init(MODUL_NAME);
 
+  delay(1000);
+
   // new ShdMotionSensor(5);
   new ShdTemperatureSensor();
 
   ShdWs2812bStrip::initStrip(144, 25);
-  new ShdWs2812bStrip(1, 10, 5, IGNITION_BOTH, 1, 5);
-  // new ShdWs2812bStrip(6, 10, 0, IGNITION_FORWARD, 3, 5, "Test2");
+  // ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
+  new ShdWs2812bStrip(1, 10, 5, IGNITION_BOTH_FORWARD, 1, 2);
+  new ShdWs2812bStrip(6, 10, 6, IGNITION_SINGLE_FORWARD, 1, 2);
 
   new ShdButton(5, true, 20, 500, 1000);
 }
