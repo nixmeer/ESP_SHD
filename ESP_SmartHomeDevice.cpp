@@ -27,13 +27,6 @@ void ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, c
   initMqtt(_mqttServerAddress, _port, _name);
 }
 
-void ESP_SmartHomeDevice::initWifi(){
-    WiFi.mode(WIFI_STA);
-    WiFiManager wifiManager;
-    wifiManager.autoConnect();
-    WiFi.hostname(MODUL_NAME);
-}
-
 void ESP_SmartHomeDevice::init(char* _name){
 
   initWifi();
@@ -58,6 +51,13 @@ void ESP_SmartHomeDevice::init(char* _name){
     Serial.println(" mqtt broker found, didn't know which one to choose. Resetting this device now.");
     ESP.reset();
   }
+}
+
+void ESP_SmartHomeDevice::initWifi(){
+  WiFi.mode(WIFI_STA);
+  WiFiManager wifiManager;
+  wifiManager.autoConnect();
+  WiFi.hostname(MODUL_NAME);
 }
 
 void ESP_SmartHomeDevice::initMqtt(const char* _mqttServerAddress, uint16_t _port, char* _name){ // TODO: Char * als const?

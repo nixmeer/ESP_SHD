@@ -19,7 +19,7 @@ class ShdWs2812bStrip : public ESP_SmartHomeDevice {
 public:
   static void initStrip(uint16_t _numberOfLeds, uint16_t _updateInterval);
 
-  ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
+  ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t _ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
 
 private:
   // static functions and variables for the entire strip:

@@ -125,11 +125,11 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
     shownValue[i] = 0;
   }
 
-  snprintf (subTopicColor, 50, "%s/Lampe/%d/setColor", name, sectionNumber);
-  snprintf (pubTopicColor, 50, "%s/Lampe/%d/getColor", name, sectionNumber);
-  snprintf (subTopicState, 50, "%s/Lampe/%d/setStatus", name, sectionNumber);
-  snprintf (pubTopicState, 50, "%s/Lampe/%d/getStatus", name, sectionNumber);
-  snprintf (pubTopicBrightness, 50, "%s/Lampe/%d/getBrightness", name, sectionNumber);
+  snprintf (subTopicColor, 50, "%s/Lamp/%d/setColor", name, sectionNumber);
+  snprintf (pubTopicColor, 50, "%s/Lamp/%d/getColor", name, sectionNumber);
+  snprintf (subTopicState, 50, "%s/Lamp/%d/setStatus", name, sectionNumber);
+  snprintf (pubTopicState, 50, "%s/Lamp/%d/getStatus", name, sectionNumber);
+  snprintf (pubTopicBrightness, 50, "%s/Lamp/%d/getBrightness", name, sectionNumber);
 
   resubscribe();
 
