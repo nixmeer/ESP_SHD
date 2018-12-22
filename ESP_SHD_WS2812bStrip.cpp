@@ -134,7 +134,7 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
   resubscribe();
 
   direction = _ignitionDirection;
-  if (direction == IGNITION_BACKWARD) {
+  if (direction == IGNITION_SINGLE_BACKWARD || direction == IGNITION_BOTH_BACKWARD ) {
     directionInverted = true;
   } else {
     directionInverted = false;
@@ -165,7 +165,7 @@ void ShdWs2812bStrip::igniteSingleDir(){
 
     // shift as many LEDs as possible. Every LED value jumps for hopsPerShow
     int16_t targetLed;
-    if (!directionInverted) {
+    if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
       targetLed = firstLed + ignitionPoint + i;
     } else {
       targetLed = firstLed + ignitionPoint - i;
@@ -177,7 +177,7 @@ void ShdWs2812bStrip::igniteSingleDir(){
     }
 
     int16_t sourceLed;
-    if (!directionInverted) {
+    if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
       sourceLed = targetLed - hopsPerShow;
     } else {
       sourceLed = targetLed + hopsPerShow;
@@ -206,7 +206,7 @@ void ShdWs2812bStrip::igniteSingleDir(){
   for (uint8_t i = hopsPerShow; i > 0; i--) {
 
     int16_t targetLed;
-    if (!directionInverted) {
+    if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
       targetLed = firstLed + ignitionPoint + (i - 1);
     } else {
       targetLed = firstLed + ignitionPoint - (i - 1);
@@ -364,13 +364,15 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   Serial.print(_newBlue);
   #endif
 
-  if (_newRed == 0 && _newBlue == 0 && _newGreen == 0 && setPoint[0] != 0 && setPoint[1] != 0 && setPoint[2] != 0) {
-    for (uint8_t i = 0; i < 3; i++) {
-      savedValue[i] = shownValue[i] >> 8;
+  if (_newRed == 0 && _newBlue == 0 && _newGreen == 0) {
+    directionTmpInverted = true;
+    if (setPoint[0] != 0 && setPoint[1] != 0 && setPoint[2] != 0) {
+      for (uint8_t i = 0; i < 3; i++) {
+        savedValue[i] = shownValue[i] >> 8;
+      }
     }
-    directionInverted = !directionInverted;
-  } else if (_newRed != 0 && _newGreen != 0 && _newBlue != 0 && setPoint[0] == 0 && setPoint[1] == 0 && setPoint[2] == 0) {
-    directionInverted = !directionInverted;
+  } else if (_newRed != 0 && _newGreen != 0 && _newBlue != 0) {
+    directionTmpInverted = false;
   }
 
   setPoint[0] = _newRed << 8;
@@ -518,9 +520,7 @@ void ShdWs2812bStrip::timer5msHandler(){
 }
 
 void ShdWs2812bStrip::callIgnitionFunction(){
-  if (direction == IGNITION_FORWARD) {
-    igniteSingleDir();
-  } else if (direction == IGNITION_BACKWARD) {
+  if (direction == IGNITION_SINGLE_FORWARD || direction == IGNITION_SINGLE_BACKWARD ) {
     igniteSingleDir();
   } else {
     igniteBothDir();

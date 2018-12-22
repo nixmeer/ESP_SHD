@@ -12,7 +12,7 @@
 
 #define DATA_PIN 4
 
-enum ignitionDirection { IGNITION_FORWARD, IGNITION_BACKWARD, IGNITION_BOTH };
+enum ignitionDirection { IGNITION_SINGLE_FORWARD, IGNITION_SINGLE_BACKWARD, IGNITION_BOTH_FORWARD, IGNITION_BOTH_BACKWARD };
 
 class ShdWs2812bStrip : public ESP_SmartHomeDevice {
 
@@ -20,8 +20,6 @@ public:
   static void initStrip(uint16_t _numberOfLeds, uint16_t _updateInterval);
 
   ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
-
-  void addButton(uint8_t _pin);
 
 private:
   // static functions and variables for the entire strip:
@@ -45,6 +43,7 @@ private:
   uint8_t hopsPerShow;
   uint16_t updateInterval;
   bool directionInverted;
+  bool directionTmpInverted;
   bool igniting;
   uint16_t ignitionCounter;
   uint16_t ignitionPoint;
