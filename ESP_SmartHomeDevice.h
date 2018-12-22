@@ -10,6 +10,7 @@ extern "C" {
 #include <ESP8266WiFi.h>
 #include "WiFiClient.h"
 #include <ESP8266mDNS.h>
+#include "WiFiManager.h"
 
 #ifndef MAX_SHDS
 #define MAX_SHDS 5
@@ -27,6 +28,9 @@ protected:
   virtual bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length) = 0;
   virtual void timer5msHandler() = 0;
   virtual void resubscribe() = 0;
+  static void reconnect();
+  static void initWifi();
+  static void initMqtt(const char* _mqttServerAddress, uint16_t _port, char* _name);
   static ESP_SmartHomeDevice* shds[MAX_SHDS];
   static int numberOfShds;
   static PubSubClient mqttClient;
@@ -35,7 +39,6 @@ protected:
   static os_timer_t loopTimer;
   static int lastConnectionAttempt;
   static int last5msTimer;
-  static void reconnect();
 };
 
 #endif

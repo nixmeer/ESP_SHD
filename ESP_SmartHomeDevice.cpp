@@ -28,6 +28,8 @@ void ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, c
 }
 
 void ESP_SmartHomeDevice::init(char* _name){
+  numberOfShds = 0;
+  name = _name;
 
   initWifi();
 
@@ -42,7 +44,7 @@ void ESP_SmartHomeDevice::init(char* _name){
 
   int n = MDNS.queryService("mqtt", "tcp");
   if(n == 1){ // if 1 mqtt service is found, call normal init()
-    ESP_SmartHomeDevice::initMqtt(MDNS.hostname(0).c_str(), MDNS.port(0), _name);
+    initMqtt(MDNS.hostname(0).c_str(), MDNS.port(0), _name);
   } else if (n == 0) {
     Serial.println("0 mqtt broker found. Resetting this device now.");
     ESP.reset();
@@ -57,7 +59,7 @@ void ESP_SmartHomeDevice::initWifi(){
   WiFi.mode(WIFI_STA);
   WiFiManager wifiManager;
   wifiManager.autoConnect();
-  WiFi.hostname(MODUL_NAME);
+  WiFi.hostname(name);
 }
 
 void ESP_SmartHomeDevice::initMqtt(const char* _mqttServerAddress, uint16_t _port, char* _name){ // TODO: Char * als const?

@@ -1,5 +1,4 @@
 #include "PubSubClient.h"
-#include "WiFiManager.h"
 #include <ArduinoOTA.h>
 #include "ESP_SmartHomeDevice.h"
 #include "ESP_SHD_MotionSensor.h"
