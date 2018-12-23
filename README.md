@@ -11,6 +11,7 @@ Keep it simple and stupid. Everyone should be able to build his or her smart hom
 - [x] Stateless switches
 - [x] TMP36 sensors
 - [x] Motion sensors
+- [ ] PWM light
 
 ## Libraries used
 
