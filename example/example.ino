@@ -1,10 +1,11 @@
 #include "PubSubClient.h"
 #include <ArduinoOTA.h>
 #include "ESP_SmartHomeDevice.h"
-#include "ESP_SHD_MotionSensor.h"
-#include "ESP_SHD_TemperatureSensor.h"
-#include "ESP_SHD_WS2812bStrip.h"
-#include "ESP_SHD_Button.h"
+// #include "ESP_SHD_MotionSensor.h"
+// #include "ESP_SHD_TemperatureSensor.h"
+// #include "ESP_SHD_WS2812bStrip.h"
+// #include "ESP_SHD_Button.h"
+#include "ESP_SHD_PwmLight.h"
 
 #define MODUL_NAME "Flur/Spiegel"
 
@@ -19,15 +20,16 @@ void setup() {
 
   delay(1000);
 
+  new Shd_PwmLight(5, true, 40, 1000);
   // new ShdMotionSensor(5);
-  new ShdTemperatureSensor();
+  // new ShdTemperatureSensor();
 
-  ShdWs2812bStrip::initStrip(144, 25);
+  // ShdWs2812bStrip::initStrip(144, 25);
   // ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
-  new ShdWs2812bStrip(1, 10, 5, IGNITION_BOTH_FORWARD, 1, 2);
-  new ShdWs2812bStrip(6, 10, 6, IGNITION_SINGLE_FORWARD, 1, 2);
+  // new ShdWs2812bStrip(1, 10, 5, IGNITION_BOTH_FORWARD, 1, 2);
+  // new ShdWs2812bStrip(6, 10, 6, IGNITION_SINGLE_FORWARD, 1, 2);
 
-  new ShdButton(5, true, 20, 500, 1000);
+  // new ShdButton(5, true, 20, 500, 1000);
 }
 
 void loop() {

@@ -3,7 +3,6 @@
 #include <FunctionalInterrupt.h>
 
 #define DEBUG 0
-#define DEBOUNCE_MILLIS 500
 
 uint16_t ShdWs2812bStrip::millisLastStripUpdate;
 uint16_t ShdWs2812bStrip::millisStripUpdateInterval;
@@ -499,7 +498,7 @@ bool ShdWs2812bStrip::handleMqttRequest(char* _topic, unsigned char* _payload, u
     } else if (_payload[0] == 0x31) { // ASCII "1"
       setNewColor(savedValue[0], savedValue[1], savedValue[2]);
     } else {
-      return false;
+      // return false; // Returning true since the topic is right
     }
   } else {
     return false;
