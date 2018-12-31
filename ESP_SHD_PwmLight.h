@@ -20,11 +20,10 @@ private:
   uint32_t millisLastUpdate;
   uint32_t millisUpdateInterval;
   bool flankOver;
-  char pubTopicBrightness[50], pubTopicState[50], subTopicState[50], subTopicBrightness[50];
+  char pubTopicBrightness[60], pubTopicState[60], subTopicState[60], subTopicBrightness[60];
 
   static bool firstRun;
   static uint8_t numberOfPwmPins;
-  static uint32_t pwmPeriod;
   static uint32_t pwmDutyInit[MAX_PWM_CHANNELS];
   static uint32_t ioInfo[MAX_PWM_CHANNELS][3];
 

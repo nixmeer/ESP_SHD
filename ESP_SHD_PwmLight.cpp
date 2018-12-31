@@ -1,9 +1,10 @@
 #include "ESP_SHD_PwmLight.h"
 #include "pwm.h"
 
+#define DEBUG 10
+
 bool Shd_PwmLight::firstRun = true;
 uint8_t Shd_PwmLight::numberOfPwmPins = 0;
-uint32_t Shd_PwmLight::pwmPeriod = 32768;
 uint32_t Shd_PwmLight::pwmDutyInit[MAX_PWM_CHANNELS];
 uint32_t Shd_PwmLight::ioInfo[MAX_PWM_CHANNELS][3];
 uint32_t Shd_PwmLight::gammaCorrection[101] = {
@@ -29,11 +30,18 @@ Shd_PwmLight::Shd_PwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateI
   lowActive = _lowActive;
   millisUpdateInterval = _millisUpdateInterval;
   delta = 100/(_flankLength / millisUpdateInterval);
+  flankOver = true;
+  setPoint = 0;
+  millisLastUpdate = millis();
+  lastBrightnessGreaterZero = 100;
+  currentBrightness = setPoint;
 
-  snprintf (pubTopicBrightness, 50, "%s/PwmLight/%d/getBrightness", name, numberOfPwmPins);
-  snprintf (pubTopicState, 50, "%s/PwmLight/%d/getStatus", name, numberOfPwmPins);
-  snprintf (subTopicBrightness, 50, "%s/PwmLight/%d/setBrightness", name, numberOfPwmPins);
-  snprintf (subTopicState, 50, "%s/PwmLight/%d/setStatus", name, numberOfPwmPins);
+  snprintf (pubTopicBrightness, 60, "%s/PwmLight/%d/getBrightness", name, numberOfPwmPins);
+  snprintf (pubTopicState, 60, "%s/PwmLight/%d/getStatus", name, numberOfPwmPins);
+  snprintf (subTopicBrightness, 60, "%s/PwmLight/%d/setBrightness", name, numberOfPwmPins);
+  snprintf (subTopicState, 60, "%s/PwmLight/%d/setStatus", name, numberOfPwmPins);
+
+  resubscribe();
 
   pwmDutyInit[pwmNumber] = 0;
   pinMode(pin, OUTPUT);
@@ -62,10 +70,17 @@ void Shd_PwmLight::timer5msHandler() {
   // initialize ESP8266_new_pwm, if this is the first call of timer5msHandler
   if (firstRun) {
     firstRun = false;
-    pwm_init(pwmPeriod, pwmDutyInit, numberOfPwmPins, ioInfo);
+    pwm_init(gammaCorrection[100], pwmDutyInit, numberOfPwmPins, ioInfo);
 
     #if DEBUG > 0
-    Serial.println("PwmLight: Initialized PWM. ");
+    Serial.print("SHD: PwmLight: Initialized PWM. pwmPeriod: ");
+    Serial.print(gammaCorrection[100]);
+    Serial.print(", pwmDutyInit[");
+    Serial.print(pwmNumber);
+    Serial.print("]: ");
+    Serial.print(pwmDutyInit[pwmNumber]);
+    Serial.print(", numberOfPwmPins: ");
+    Serial.println(numberOfPwmPins);
     #endif
   }
 
@@ -73,33 +88,54 @@ void Shd_PwmLight::timer5msHandler() {
   if(currentMillis - millisLastUpdate >= millisUpdateInterval){
 
     #if DEBUG > 3
-    Serial.print("PwmLight: Updating no. ");
+    Serial.print("SHD: PwmLight: Updating no. ");
     Serial.print(pwmNumber);
     Serial.print(" at ");
-    Serial.println(currentMillis);
+    Serial.print(currentMillis);
     #endif
 
     // Increase millisLastUpdate to keep interval:
-    while (currentMillis - millisLastUpdate >= millisUpdateInterval) {
-      millisLastUpdate += millisUpdateInterval;
+    millisLastUpdate += millisUpdateInterval;
+    if(currentMillis - millisLastUpdate >= millisUpdateInterval) {
+      millisLastUpdate = millis();
     }
 
-    if (abs((int8_t)((int8_t)setPoint - (int8_t)currentBrightness)) < delta) {
+    if (abs((int8_t)((int8_t)setPoint - (int8_t)currentBrightness)) <= delta) {
       currentBrightness = setPoint;
       flankOver = true;
     } else if (((int8_t)(setPoint - currentBrightness)) > 0) {
       currentBrightness += delta;
       if (currentBrightness > 100) {
         currentBrightness = 100;
+        flankOver = true;
       }
     } else if(((int8_t)(setPoint - currentBrightness)) < 0) {
       currentBrightness -= delta;
       if (currentBrightness < 0) {
         currentBrightness = 0;
+        flankOver = true;
       }
     }
 
-    pwm_set_duty(gammaCorrection[currentBrightness], pwmNumber);
+    #if DEBUG > 3
+    Serial.print(". Percentage: ");
+    Serial.print(currentBrightness);
+    #endif
+    if (lowActive) {
+      #if DEBUG > 3
+      Serial.print(". Value: ");
+      Serial.println(gammaCorrection[100] - gammaCorrection[currentBrightness]);
+      #endif
+      pwm_set_duty(gammaCorrection[100] - gammaCorrection[currentBrightness], pwmNumber);
+      pwm_start();
+    } else {
+        #if DEBUG > 3
+      Serial.print(". Value: ");
+      Serial.println(gammaCorrection[currentBrightness]);
+      #endif
+      pwm_set_duty(gammaCorrection[currentBrightness], pwmNumber);
+      pwm_start();
+    }
   }
 }
 
@@ -123,20 +159,32 @@ void Shd_PwmLight::setBrightness(uint8_t _percentage){
     return;
   }
   if (_percentage > 0) {
+    // save every percentage greater 0 for restoring after turning the light off and on
     lastBrightnessGreaterZero = _percentage;
+    mqttClient.publish(pubTopicState, "1");
+  } else {
+    mqttClient.publish(pubTopicState, "0");
   }
 
+  // save new set point
   setPoint = _percentage;
+
+  // publish new brightness
+  char payload[5];
+  snprintf (payload, 5, "%d", setPoint);
+  mqttClient.publish(pubTopicBrightness, payload);
+
+  // start fading process:
   flankOver = false;
 }
 
 void Shd_PwmLight::resubscribe(){
   mqttClient.subscribe(subTopicBrightness, 0);
-  Serial.print("SHD PwmLight subscribed to ");
+  Serial.print("SHD: PwmLight subscribed to ");
   Serial.println(subTopicBrightness);
 
   mqttClient.subscribe(subTopicState, 0);
-  Serial.print("SHD PwmLight subscribed to ");
+  Serial.print("SHD: PwmLight subscribed to ");
   Serial.println(subTopicState);
 }
 
