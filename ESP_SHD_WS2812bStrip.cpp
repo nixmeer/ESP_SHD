@@ -404,7 +404,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
 
   // publish new color:
   clearPayloadBuffer();
-  snprintf (payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
+  snprintf(payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
   mqttClient.publish(pubTopicColor, payloadBuffer);
   #if DEBUG >= 2
   Serial.print("MQTT: new Color published: ");
@@ -414,7 +414,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   // publish brightness:
   clearPayloadBuffer();
   uint16_t brightness = (max(max(setPoint[0], setPoint[1]), setPoint[2]) / 652);
-  snprintf (payloadBuffer, 50, "%d", brightness);
+  snprintf(payloadBuffer, 50, "%d", brightness);
   mqttClient.publish(pubTopicBrightness, payloadBuffer);
   #if DEBUG >= 2
   Serial.println("MQTT: Brightness published.");
