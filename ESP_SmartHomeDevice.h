@@ -39,6 +39,8 @@ protected:
   static os_timer_t loopTimer;
   static int lastConnectionAttempt;
   static int last5msTimer;
+  static char * mqttServerAddress;
+  static uint16_t port;
 };
 
 #endif

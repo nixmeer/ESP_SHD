@@ -1,5 +1,7 @@
 #include "ESP_SmartHomeDevice.h"
 
+#define DEBUG 10
+
 ESP_SmartHomeDevice* ESP_SmartHomeDevice::shds[MAX_SHDS];
 PubSubClient ESP_SmartHomeDevice::mqttClient;
 WiFiClient ESP_SmartHomeDevice::wifiClient;
@@ -44,6 +46,7 @@ void ESP_SmartHomeDevice::init(char* _name){
 
   int n = MDNS.queryService("mqtt", "tcp");
   if(n == 1){ // if 1 mqtt service is found, call normal init()
+
     initMqtt(MDNS.hostname(0).c_str(), MDNS.port(0), _name);
   } else if (n == 0) {
     Serial.println("0 mqtt broker found. Resetting this device now.");
@@ -120,7 +123,7 @@ void ESP_SmartHomeDevice::loop(){//void *pArg){
 void ESP_SmartHomeDevice::reconnect(){
   int currentMillis = millis();
   if (currentMillis - lastConnectionAttempt > TRY_RECONNECT_AFTER_MILLISECONDS) {
-    mqttClient.setServer("192.168.178.37", 1883);
+    init(name);
     if (mqttClient.connect(name)) {
       Serial.println("Now successfully connected to MQTT server. ");
       for (size_t i = 0; i < numberOfShds; i++) {
