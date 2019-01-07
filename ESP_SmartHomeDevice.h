@@ -21,7 +21,7 @@ class ESP_SmartHomeDevice {
 public:
   ESP_SmartHomeDevice();
   static void init(char* _name);
-  static void init(const char* _mqttServerAddress, uint16_t _port, char* _name);
+  static void init(char* _mqttServerAddress, uint16_t _port, char* _name);
   static void mqttCallback(char* _topic, unsigned char* _payload, unsigned int _length);
   static void loop();//void *pArg);
 protected:
@@ -29,18 +29,20 @@ protected:
   virtual void timer5msHandler() = 0;
   virtual void resubscribe() = 0;
   static void reconnect();
-  static void initWifi();
-  static void initMqtt(const char* _mqttServerAddress, uint16_t _port, char* _name);
+  static void connectWifi();
+  static void reconnectMqtt();
+  static void reconnectMqtt(const char* _mqttServerAddress, uint16_t _port);
   static ESP_SmartHomeDevice* shds[MAX_SHDS];
-  static int numberOfShds;
+  static uint8_t numberOfShds;
   static PubSubClient mqttClient;
   static WiFiClient wifiClient;
   static char* name;
   static os_timer_t loopTimer;
-  static int lastConnectionAttempt;
-  static int last5msTimer;
+  static uint32_t lastConnectionAttempt;
+  static uint32_t last5msTimer;
   static char * mqttServerAddress;
   static uint16_t port;
+  static bool useMdns;
 };
 
 #endif

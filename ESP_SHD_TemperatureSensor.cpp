@@ -1,5 +1,4 @@
 #include "ESP_SHD_TemperatureSensor.h"
-#include <FunctionalInterrupt.h>
 
 #define DEBUG 0
 
@@ -10,7 +9,7 @@ ShdTemperatureSensor::ShdTemperatureSensor(){
 
   // debug output:
   Serial.print("New temperature sensor registered. It publishes to ");
-  Serial.print(pubTopic);
+  Serial.println(pubTopic);
   Serial.println();
 }
 
@@ -36,6 +35,12 @@ void ShdTemperatureSensor::publishTemperature() {
   }
 
   dtostrf(temperature, 3, 1, message);
+
+  if (!mqttClient.connected()) {
+    timerCounter = 5999; // set close to 6000, so next time timer5ms() is called, it's trying again
+    return;
+  }
+
   if (mqttClient.publish(pubTopic, message)) {
     #if DEBUG > 1
     Serial.print("Temperature published to ");

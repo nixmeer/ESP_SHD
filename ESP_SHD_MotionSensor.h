@@ -10,7 +10,7 @@ public:
 private:
   bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length);
   uint8_t pin;
-  bool motionDeteced;
+  bool motionDeteced, motionSensorStatus;
   void pinChange();
   char pubTopic[50];
   void timer5msHandler();

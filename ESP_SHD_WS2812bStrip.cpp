@@ -392,34 +392,37 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   Serial.println();
   #endif
 
-  // publish current status:
-  if (setPoint[0] == 0 && setPoint[1] == 0 && setPoint[2] == 0) {
-    mqttClient.publish(pubTopicState, "0");
-  } else {
-    mqttClient.publish(pubTopicState, "1");
+  // if mqtt client is connected, publish current status:
+  if (mqttClient.connected()) {
+    if (setPoint[0] == 0 && setPoint[1] == 0 && setPoint[2] == 0) {
+      mqttClient.publish(pubTopicState, "0");
+    } else {
+      mqttClient.publish(pubTopicState, "1");
+    }
+    #if DEBUG >= 2
+    Serial.println("MQTT: State published.");
+    #endif
+
+    // publish new color:
+    clearPayloadBuffer();
+    snprintf(payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
+    mqttClient.publish(pubTopicColor, payloadBuffer);
+    #if DEBUG >= 2
+    Serial.print("MQTT: new Color published: ");
+    Serial.println(payloadBuffer);
+    #endif
+
+    // publish brightness:
+    clearPayloadBuffer();
+    uint16_t brightness = (max(max(setPoint[0], setPoint[1]), setPoint[2]) / 652);
+    snprintf(payloadBuffer, 50, "%d", brightness);
+    mqttClient.publish(pubTopicBrightness, payloadBuffer);
+    #if DEBUG >= 2
+    Serial.println("MQTT: Brightness published.");
+    #endif
   }
-  #if DEBUG >= 2
-  Serial.println("MQTT: State published.");
-  #endif
 
-  // publish new color:
-  clearPayloadBuffer();
-  snprintf(payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
-  mqttClient.publish(pubTopicColor, payloadBuffer);
-  #if DEBUG >= 2
-  Serial.print("MQTT: new Color published: ");
-  Serial.println(payloadBuffer);
-  #endif
-
-  // publish brightness:
-  clearPayloadBuffer();
-  uint16_t brightness = (max(max(setPoint[0], setPoint[1]), setPoint[2]) / 652);
-  snprintf(payloadBuffer, 50, "%d", brightness);
-  mqttClient.publish(pubTopicBrightness, payloadBuffer);
-  #if DEBUG >= 2
-  Serial.println("MQTT: Brightness published.");
-  #endif
-
+  // set igniting flag to start effect:
   igniting = true;
 }
 

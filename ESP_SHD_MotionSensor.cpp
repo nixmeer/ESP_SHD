@@ -1,6 +1,8 @@
 #include "ESP_SHD_MotionSensor.h"
 #include <FunctionalInterrupt.h>
 
+#define DEBUG 0
+
 ShdMotionSensor::ShdMotionSensor(uint8_t _pin){
 
   // prepare pin and attach interrupt:
@@ -10,11 +12,12 @@ ShdMotionSensor::ShdMotionSensor(uint8_t _pin){
 
   // initialize variables
   motionDeteced = false;
+  motionSensorStatus = false;
   snprintf (pubTopic, 50, "%s/Motion", name);
 
   // debug output:
   Serial.print("New motion sensor registered. It publishes to ");
-  Serial.print(pubTopic);
+  Serial.println(pubTopic);
   Serial.println();
 }
 
@@ -23,29 +26,52 @@ bool ShdMotionSensor::handleMqttRequest(char* _topic, unsigned char* _payload, u
 }
 
 void ShdMotionSensor::timer5msHandler(){
+
+  // test, if mqtt client is connected
+  if (!mqttClient.connected()) {
+    return;
+  }
+
+
+  if (motionSensorStatus && !motionDeteced) {
+                                                                  #if DEBUG > 2
+                                                                  Serial.print("Motion detected. ");
+                                                                  #endif
+    if (mqttClient.publish(pubTopic, "true")) {
+                                                                  #if DEBUG > 2
+                                                                  Serial.print("Published via MQTT. ");
+                                                                  #endif
+    } else {
+                                                                  #if DEBUG > 2
+                                                                  Serial.print("Could not publish via MQTT. ");
+                                                                  #endif
+    }
+                                                                  #if DEBUG > 2
+                                                                  Serial.println();
+                                                                  #endif
+  } else if (!motionSensorStatus && motionDeteced) {
+                                                                  #if DEBUG > 2
+                                                                  Serial.print("No motion detected. ");
+                                                                  #endif
+    if (mqttClient.publish(pubTopic, "false")) {
+                                                                  #if DEBUG > 2
+                                                                  Serial.print("Published via MQTT. ");
+                                                                  #endif
+    } else {
+                                                                  #if DEBUG > 2
+                                                                  Serial.print("Could not publish via MQTT. ");
+                                                                  #endif
+    }
+                                                                  #if DEBUG > 2
+                                                                  Serial.println();
+                                                                  #endif
+  }
+  motionDeteced = motionSensorStatus;
   return;
 }
 
 void ShdMotionSensor::pinChange(){
-  bool motionSensorStatus = digitalRead(pin);
-  if (motionSensorStatus && !motionDeteced) {
-    Serial.print("Motion detected. ");
-    if (mqttClient.publish(pubTopic, "true")) {
-      Serial.print("Published via MQTT. ");
-    } else {
-      Serial.print("Could not publish via MQTT. ");
-    }
-    Serial.println();
-  } else if (!motionSensorStatus && motionDeteced) {
-    Serial.print("No motion detected. ");
-    if (mqttClient.publish(pubTopic, "false")) {
-      Serial.print("Published via MQTT. ");
-    } else {
-      Serial.print("Could not publish via MQTT. ");
-    }
-    Serial.println();
-  }
-  motionDeteced = motionSensorStatus;
+  motionSensorStatus = digitalRead(pin);
 }
 
 

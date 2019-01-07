@@ -2,7 +2,6 @@
 #include <FunctionalInterrupt.h>
 
 
-
 class ShdButton : public ESP_SmartHomeDevice {
 public:
   ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick);
