@@ -8,7 +8,7 @@ Keep it simple and stupid. Everyone should be able to build his or her smart hom
 - [x] Stateless switches
 - [x] TMP36 sensors
 - [x] Motion sensors
-- [ ] PWM light
+- [x] PWM light
 ## Libraries used
 - [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino)
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary
