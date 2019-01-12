@@ -54,9 +54,6 @@ Shd_PwmLight::Shd_PwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateI
   Serial.print(subTopicBrightness);
   Serial.print(" and ");
   Serial.print(subTopicState);
-  Serial.print(". Free stack: ");
-  Serial.print(ESP.getFreeHeap());
-  Serial.print(" bytes");
   Serial.println();
 }
 
