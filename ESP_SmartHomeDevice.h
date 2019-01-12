@@ -13,7 +13,7 @@ extern "C" {
 #include "WiFiManager.h"
 
 #ifndef MAX_SHDS
-#define MAX_SHDS 5
+#define MAX_SHDS 8
 #endif
 
 
