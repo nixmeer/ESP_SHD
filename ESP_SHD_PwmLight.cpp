@@ -1,13 +1,13 @@
-#include "ESP_SHD_PwmLight.h"
+#include "ESP_ShdPwmLight.h"
 #include "pwm.h"
 
 #define DEBUG 10
 
-bool Shd_PwmLight::firstRun = true;
-uint8_t Shd_PwmLight::numberOfPwmPins = 0;
-uint32_t Shd_PwmLight::pwmDutyInit[MAX_PWM_CHANNELS];
-uint32_t Shd_PwmLight::ioInfo[MAX_PWM_CHANNELS][3];
-uint32_t Shd_PwmLight::gammaCorrection[101] = {
+bool ShdPwmLight::firstRun = true;
+uint8_t ShdPwmLight::numberOfPwmPins = 0;
+uint32_t ShdPwmLight::pwmDutyInit[MAX_PWM_CHANNELS];
+uint32_t ShdPwmLight::ioInfo[MAX_PWM_CHANNELS][3];
+uint32_t ShdPwmLight::gammaCorrection[101] = {
   0, 1, 4, 10, 20, 33, 51, 72,
   98, 129, 164, 204, 250, 300, 356, 417,
   484, 557, 635, 719, 809, 905, 1007, 1115,
@@ -23,7 +23,7 @@ uint32_t Shd_PwmLight::gammaCorrection[101] = {
   29830, 30550, 31279, 32018, 32767
 };
 
-Shd_PwmLight::Shd_PwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength){
+ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength){
   pwmNumber = numberOfPwmPins;
   numberOfPwmPins++;
   pin = _pin;
@@ -57,7 +57,7 @@ Shd_PwmLight::Shd_PwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateI
   Serial.println();
 }
 
-void Shd_PwmLight::timer5msHandler() {
+void ShdPwmLight::timer5msHandler() {
 
   // return, if this light is not changing its brightness
   if (flankOver) {
@@ -136,7 +136,7 @@ void Shd_PwmLight::timer5msHandler() {
   }
 }
 
-bool Shd_PwmLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint16_t _length){
+bool ShdPwmLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint16_t _length){
   if (strcmp(_topic, subTopicState) == 0) {
     if (_payload[0] == 0x30) {
       setBrightness(0);
@@ -151,7 +151,7 @@ bool Shd_PwmLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint
 }
 
 
-void Shd_PwmLight::setBrightness(uint8_t _percentage){
+void ShdPwmLight::setBrightness(uint8_t _percentage){
   if (_percentage < 0 || _percentage > 100) {
     return;
   }
@@ -175,7 +175,7 @@ void Shd_PwmLight::setBrightness(uint8_t _percentage){
   flankOver = false;
 }
 
-void Shd_PwmLight::resubscribe(){
+void ShdPwmLight::resubscribe(){
   mqttClient.subscribe(subTopicBrightness, 0);
   Serial.print("SHD: PwmLight subscribed to ");
   Serial.println(subTopicBrightness);
@@ -185,7 +185,7 @@ void Shd_PwmLight::resubscribe(){
   Serial.println(subTopicState);
 }
 
-bool Shd_PwmLight::addIoInfo(){
+bool ShdPwmLight::addIoInfo(){
     switch (pin) {
       case 2:
         ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_GPIO2_U;

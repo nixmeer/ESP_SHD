@@ -2,9 +2,9 @@
 
 #define MAX_PWM_CHANNELS 5
 
-class Shd_PwmLight : public ESP_SmartHomeDevice {
+class ShdPwmLight : public ESP_SmartHomeDevice {
 public:
-  Shd_PwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength);
+  ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength);
 private:
   bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length);
   void timer5msHandler();
