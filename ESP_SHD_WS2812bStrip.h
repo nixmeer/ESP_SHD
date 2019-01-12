@@ -32,6 +32,7 @@ private:
   static ShdWs2812bStrip * sections[MAX_NUM_OF_SECTIONS];
   static bool correctlyInitialized;
   static uint16_t counter5ms;
+  static uint8_t gammaCorrection[256];
 
   // variables for each section
   uint8_t sectionNumber;
@@ -49,9 +50,6 @@ private:
   uint16_t ignitionPoint;
   char subTopicColor[50], pubTopicColor[50], subTopicState[50], pubTopicState[50], pubTopicBrightness[50], payloadBuffer[50];
   ignitionDirection direction;
-  bool buttonDetached;
-  uint32_t buttonDetachedMillis;
-  uint8_t buttonPin;
 
   // functions for each section:
   bool handleMqttRequest(char* _topic, byte* _payload, uint16_t _length);

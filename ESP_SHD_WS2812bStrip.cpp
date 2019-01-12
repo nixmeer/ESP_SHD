@@ -2,7 +2,7 @@
 #include "FastLED.h"
 #include <FunctionalInterrupt.h>
 
-#define DEBUG 0
+#define DEBUG 2
 
 uint16_t ShdWs2812bStrip::millisLastStripUpdate;
 uint16_t ShdWs2812bStrip::millisStripUpdateInterval;
@@ -11,6 +11,23 @@ ShdWs2812bStrip * ShdWs2812bStrip::sections[MAX_NUM_OF_SECTIONS];
 uint16_t ShdWs2812bStrip::numberOfLeds = 0;
 uint8_t ShdWs2812bStrip::numberOfSections = 0;
 bool ShdWs2812bStrip::correctlyInitialized = false;
+
+uint8_t ShdWs2812bStrip::gammaCorrection[256] = {
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+  2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4,
+  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+  6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8,
+  9, 9, 9, 9, 9, 10, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 13,
+  13, 14, 14, 14, 15, 15, 15, 16, 16, 16, 17, 17, 17, 18, 18, 19, 19, 19, 20, 20,
+  21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 28, 28, 29, 29, 30, 31, 31,
+  32, 33, 34, 34, 35, 36, 37, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+  50, 51, 52, 53, 54, 55, 57, 58, 59, 60, 62, 63, 65, 66, 67, 69, 70, 72, 74, 75,
+  77, 79, 80, 82, 84, 86, 88, 89, 91, 93, 96, 98, 100, 102, 104, 107, 109, 111,
+  114, 116, 119, 121, 124, 127, 130, 133, 135, 138, 141, 145, 148, 151, 154, 158,
+  161, 165, 168, 172, 176, 180, 184, 188, 192, 196, 201, 205, 210, 214, 219, 224,
+  229, 234, 239, 244, 249, 255
+};
 
 void ShdWs2812bStrip::show(){
 
@@ -50,7 +67,7 @@ void ShdWs2812bStrip::show(){
     // prepare all CRGBs for next show():
     for (uint8_t i = 0; i < numberOfSections; i++) {
       if (sections[i]->igniting) {
-        #if DEBUG >= 1
+        #if DEBUG > 3
         Serial.print("Updating section no. ");
         Serial.print(i);
         Serial.println(".");
@@ -85,7 +102,6 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
   sections[numberOfSections] = this;
   numberOfSections++;
   sectionNumber = numberOfSections;
-  buttonDetached = false;
 
   // check if first and last LED number are plausible:
   if (_firstLed <= _lastLed && _firstLed > 0 && _lastLed <= numberOfLeds) {
@@ -96,13 +112,7 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
     return;
   }
 
-  if (_flankLength < lastLed - firstLed) {
-    flankLength = _flankLength;
-  } else {
-    Serial.println("flankLength not correct.");
-    correctlyInitialized = false;
-    return;
-  }
+  flankLength = _flankLength;
 
   sectionLength = lastLed - firstLed + 1;
 
@@ -146,15 +156,12 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
   }
   FastLED.show();
 
-  Serial.print("New WS2812b section no. ");
+  Serial.print("WS2812b: section no. ");
   Serial.print(sectionNumber);
   Serial.print(" registered. It subscribed to ");
   Serial.print(subTopicState);
   Serial.print(" and ");
   Serial.print(subTopicColor);
-  Serial.print(". Free stack: ");
-  Serial.print(ESP.getFreeHeap());
-  Serial.print(" bytes");
   Serial.println();
 }
 
@@ -247,7 +254,7 @@ void ShdWs2812bStrip::igniteBothDir(){
   for (uint16_t i = (sectionLength/2); i >= hopsPerShow; i--) {
 
     int16_t targetLed1, targetLed2;
-    if (!directionInverted) {
+    if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
       targetLed1 = firstLed + ignitionPoint + i;
       targetLed2 = firstLed + ignitionPoint - i;
     } else {
@@ -261,7 +268,7 @@ void ShdWs2812bStrip::igniteBothDir(){
     }
 
     int16_t sourceLed1, sourceLed2;
-    if (!directionInverted) {
+    if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
       sourceLed1 = targetLed1 - hopsPerShow;
       sourceLed2 = targetLed2 + hopsPerShow;
     } else {
@@ -306,7 +313,7 @@ void ShdWs2812bStrip::igniteBothDir(){
   #endif
   for (uint8_t i = hopsPerShow; i > 0; i--) {
     int16_t targetLed1, targetLed2;
-    if (!directionInverted) {
+    if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
       targetLed1 = firstLed + ignitionPoint + (i - 1);
       targetLed2 = firstLed + ignitionPoint - (i - 1);
     } else {
@@ -355,25 +362,46 @@ void ShdWs2812bStrip::igniteBothDir(){
 void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _newBlue){
 
   #if DEBUG >= 1
-  Serial.print("New color: ");
+  Serial.print("WS2812b: New color: ");
   Serial.print(_newRed);
   Serial.print(", ");
   Serial.print(_newGreen);
   Serial.print(", ");
   Serial.print(_newBlue);
+  Serial.print(", old set point: ");
+  Serial.print(setPoint[0]);
+  Serial.print(",");
+  Serial.print(setPoint[1]);
+  Serial.print(",");
+  Serial.print(setPoint[2]);
   #endif
+
+  // avoid turning on with 255,255,255 via color
+  if (setPoint[0] == 0 && setPoint[1] == 0 && setPoint[2] == 0 && _newRed == 255 && _newGreen == 255 && _newBlue == 255) {
+    _newRed = savedValue[0];
+    _newGreen = savedValue[1];
+    _newBlue = savedValue[2];
+  }
 
   if (_newRed == 0 && _newBlue == 0 && _newGreen == 0) {
     directionTmpInverted = true;
-    if (setPoint[0] != 0 && setPoint[1] != 0 && setPoint[2] != 0) {
-      for (uint8_t i = 0; i < 3; i++) {
-        savedValue[i] = shownValue[i] >> 8;
-      }
-    }
-  } else if (_newRed != 0 && _newGreen != 0 && _newBlue != 0) {
+  } else {
     directionTmpInverted = false;
+    savedValue[0] = _newRed;
+    savedValue[1] = _newGreen;
+    savedValue[2] = _newBlue;
   }
 
+  #if DEBUG >= 2
+  Serial.print(", saved values: ");
+  Serial.print(savedValue[0]);
+  Serial.print(",");
+  Serial.print(savedValue[1]);
+  Serial.print(",");
+  Serial.print(savedValue[2]);
+  #endif
+
+  // save new values to set point. bit shift to have a comma number
   setPoint[0] = _newRed << 8;
   setPoint[1] = _newGreen << 8;
   setPoint[2] = _newBlue << 8;
@@ -383,11 +411,11 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   }
 
   #if DEBUG >= 2
-  Serial.print(". Deltas: ");
+  Serial.print(", deltas: ");
   Serial.print(delta[0]);
-  Serial.print(", ");
+  Serial.print(",");
   Serial.print(delta[1]);
-  Serial.print(", ");
+  Serial.print(",");
   Serial.print(delta[2]);
   Serial.println();
   #endif
@@ -408,7 +436,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
     snprintf(payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
     mqttClient.publish(pubTopicColor, payloadBuffer);
     #if DEBUG >= 2
-    Serial.print("MQTT: new Color published: ");
+    Serial.print("MQTT: new color published: ");
     Serial.println(payloadBuffer);
     #endif
 
@@ -418,7 +446,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
     snprintf(payloadBuffer, 50, "%d", brightness);
     mqttClient.publish(pubTopicBrightness, payloadBuffer);
     #if DEBUG >= 2
-    Serial.println("MQTT: Brightness published.");
+    Serial.println("MQTT: rightness published.");
     #endif
   }
 
@@ -445,7 +473,7 @@ bool ShdWs2812bStrip::fillLedWithNewColor(uint16_t _ledIndex) {
     Serial.print(shownValue[i]);
     Serial.print(", ");
     #endif
-    leds[_ledIndex][i] = shownValue[i] >> 8;
+    leds[_ledIndex][i] = gammaCorrection[shownValue[i] >> 8];
   }
   #if DEBUG >= 5
   Serial.print("flankOver: ");
@@ -487,7 +515,7 @@ bool ShdWs2812bStrip::fillLedWithNewColor(uint16_t _ledIndex1, uint16_t _ledInde
 
 bool ShdWs2812bStrip::handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length){
   #if DEBUG >= 1
-  Serial.print("MQTT topic: ");
+  Serial.print("MQTT: message received. Topic: ");
   Serial.print(_topic);
   Serial.print(", payload: ");
   Serial.println((char*)_payload);
@@ -498,10 +526,10 @@ bool ShdWs2812bStrip::handleMqttRequest(char* _topic, unsigned char* _payload, u
   } else if (strcmp(_topic, subTopicState) == 0) {
     if (_payload[0] == 0x30) { // ASCII "0"
       setNewColor(0,0,0);
-    } else if (_payload[0] == 0x31) { // ASCII "1"
-      setNewColor(savedValue[0], savedValue[1], savedValue[2]);
+    } else if (_payload[0] == 0x31) { // ASCII "1" // this topic is being ignored since there's always a setColor command sent after the setState on command
+      // setNewColor(savedValue[0], savedValue[1], savedValue[2]);
     } else {
-      // return false; // Returning true since the topic is right
+      return false; // Returning true since the topic is right
     }
   } else {
     return false;
@@ -531,10 +559,10 @@ void ShdWs2812bStrip::callIgnitionFunction(){
 
 void ShdWs2812bStrip::resubscribe() {
   mqttClient.subscribe(subTopicColor, 0);
-  Serial.print("SHD subscribed to ");
+  Serial.print("WS2812b: Subscribed to ");
   Serial.println(subTopicColor);
 
   mqttClient.subscribe(subTopicState, 0);
-  Serial.print("SHD subscribed to ");
+  Serial.print("WS2812b: Subscribed to ");
   Serial.println(subTopicState);
 }
