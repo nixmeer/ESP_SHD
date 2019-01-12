@@ -31,6 +31,7 @@ protected:
   static void reconnect();
   static void connectWifi();
   static void reconnectMqtt();
+  static void reconnectMqtt(IPAddress _mqttServerAddress, uint16_t _port);
   static void reconnectMqtt(const char* _mqttServerAddress, uint16_t _port);
   static ESP_SmartHomeDevice* shds[MAX_SHDS];
   static uint8_t numberOfShds;

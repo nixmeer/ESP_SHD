@@ -1,6 +1,6 @@
 #include "ESP_SmartHomeDevice.h"
 
-#define DEBUG 10
+#define DEBUG 0
 
 ESP_SmartHomeDevice* ESP_SmartHomeDevice::shds[MAX_SHDS];
 PubSubClient ESP_SmartHomeDevice::mqttClient;
@@ -73,12 +73,13 @@ void ESP_SmartHomeDevice::reconnectMqtt(){
 
   uint16_t n = MDNS.queryService("mqtt", "tcp");
   if (n != 1) {
+    Serial.print("SHD: ");
     Serial.print(n);
     Serial.print(" mqtt services found.");
     return;
   }
 
-  reconnectMqtt(MDNS.hostname(0).c_str(),  MDNS.port(0));
+  reconnectMqtt(MDNS.IP(0),  MDNS.port(0));
 }
 
 void ESP_SmartHomeDevice::reconnectMqtt(const char* _mqttServerAddress, uint16_t _port){
@@ -89,9 +90,26 @@ void ESP_SmartHomeDevice::reconnectMqtt(const char* _mqttServerAddress, uint16_t
   mqttClient.setCallback(ESP_SmartHomeDevice::mqttCallback);
 
   if (mqttClient.connect(name)) {
-    Serial.print("Now successfully connected to MQTT server. ");
+    Serial.print("SHD: Now successfully connected to MQTT server. ");
   } else {
-    Serial.print(" 1 service found via mDNS but connecting to MQTT server failed.");
+    Serial.print("SHD: 1 mqtt service found via mDNS but connecting to MQTT server failed.");
+  }
+
+  // os_timer_setfn(&ESP_SmartHomeDevice::loopTimer, &ESP_SmartHomeDevice::loop, NULL);
+  // os_timer_arm(&ESP_SmartHomeDevice::loopTimer, 5, true);
+}
+
+void ESP_SmartHomeDevice::reconnectMqtt(IPAddress _mqttServerAddress, uint16_t _port){
+  // mqttClient.disconnect();
+
+  mqttClient.setClient(wifiClient);
+  mqttClient.setServer(_mqttServerAddress, _port);
+  mqttClient.setCallback(ESP_SmartHomeDevice::mqttCallback);
+
+  if (mqttClient.connect(name)) {
+    Serial.print("SHD: Now successfully connected to MQTT server. ");
+  } else {
+    Serial.print("SHD: 1 mqtt service found via mDNS but connecting to MQTT server failed.");
   }
 
   // os_timer_setfn(&ESP_SmartHomeDevice::loopTimer, &ESP_SmartHomeDevice::loop, NULL);
@@ -120,14 +138,16 @@ void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, un
 
 void ESP_SmartHomeDevice::loop(){//void *pArg){
 
-  if (!mqttClient.loop()) {
-    reconnect();
-  }
 
   if(micros() - last5msTimer > 5000){
     while (micros() - last5msTimer > 5000) {
       last5msTimer += 5000;
     }
+
+    if (!mqttClient.loop()) {
+      reconnect();
+    }
+
     for (size_t i = 0; i < numberOfShds; i++) {
       shds[i]->timer5msHandler();
     }
