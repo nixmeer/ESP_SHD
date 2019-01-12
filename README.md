@@ -8,7 +8,7 @@ Keep it simple and stupid. Everyone should be able to build his or her smart hom
 - [x] Stateless switches
 - [x] TMP36 sensors
 - [x] Motion sensors
-- [ ] PWM light
+- [x] PWM light
 ## Libraries used
 - [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino)
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary
@@ -45,7 +45,7 @@ Call `new ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t _ignit
 ShdWs2812bStrip subscribes to `_name/Lamp/_sectionNumber/setColor` and `_name/Lamp/_sectionNumber/setStatus`. `_sectionNumber`is increased for every new section starting at 1.
 ShdWs2812bStrip publishes its status (0 and 1) to `_name/Lamp/_sectionNumber/getStatus`, its color to `_name/Lamp/_sectionNumber/getColor` and publishes its brightness to `_name/Lamp/_sectionNumber/getBrightness`.
 ### Button
-To add a new button, call `new ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)`. It publishes to `_name/Button/_buttonNumber`. `_buttonNumber` is increased for every new section starting at 1.
+To add a new button, call `new ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)`. It publishes to `_name/Button/_buttonNumber`. `_buttonNumber` is increased for every new button starting at 1.
 # mosquitto broker on raspberry pi
 You can use any mqtt broker with this code. In order to have all devices run stable and reconnect after a loss of power, it's recommended to use mDNS to expose the a mqtt broker service to the network, so all SHDs can automatically connect to it. After installing mosquitto on the raspberry pi, call `sudo nano /etc/avahi/services/mqtt.service`. Fill the following:
 ```
