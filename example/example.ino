@@ -1,40 +1,56 @@
 #include "PubSubClient.h"
 #include <ArduinoOTA.h>
 #include "ESP_SmartHomeDevice.h"
-// #include "ESP_SHD_MotionSensor.h"
-// #include "ESP_SHD_TemperatureSensor.h"
-// #include "ESP_SHD_WS2812bStrip.h"
-// #include "ESP_SHD_Button.h"
-#include "ESP_SHD_PwmLight.h"
+#include "ESP_SHD_MotionSensor.h"
+#include "ESP_SHD_TemperatureSensor.h"
+#include "ESP_SHD_WS2812bStrip.h"
+#include "ESP_SHD_Button.h"
+#include "ESP_ShdPwmLight.h"
 
-#define MODUL_NAME "Flur/Spiegel"
+// activate Arduino OTA:
+// #define OTA
+
+#define MODUL_NAME "testroom/detailedlication" // replace it with whatever fits your personal needs
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Serial started.");
 
-
+  #ifdef OTA
   setupArduinoOta();
+  #eindif
 
   ESP_SmartHomeDevice::init(MODUL_NAME);
 
   delay(1000);
 
-  new Shd_PwmLight(5, true, 40, 1000);
-  // new ShdMotionSensor(5);
-  // new ShdTemperatureSensor();
+  // Adding a PwmLight:
+  new ShdPwmLight(12, true, 25, 1000);
+  // ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength);
 
-  // ShdWs2812bStrip::initStrip(144, 25);
+  // Adding a motion sensor:
+  new ShdMotionSensor(5); // standard pin: 5, old pin: 10
+  // ShdMotionSensor(uint8_t _pin);
+
+  // Adding a temoerature sensor:
+  new ShdTemperatureSensor();
+
+  // Adding a WS2812b strip with two sections:
+  ShdWs2812bStrip::initStrip(122, 25);
+  new ShdWs2812bStrip(1, 100, 1, IGNITION_BOTH_FORWARD, 1, 30);
+  new ShdWs2812bStrip(101, 122, IGNITION_SINGLE_FORWARD, 1, 25);
   // ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
-  // new ShdWs2812bStrip(1, 10, 5, IGNITION_BOTH_FORWARD, 1, 2);
-  // new ShdWs2812bStrip(6, 10, 6, IGNITION_SINGLE_FORWARD, 1, 2);
 
-  // new ShdButton(5, true, 20, 500, 1000);
+  // Adding a button:
+  new ShdButton(5, true, 20, 500, 1000);
+  // ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)
 }
 
 void loop() {
 
+  #ifdef OTA
   ArduinoOTA.handle();
+  #endif
 
   // remove, if MQTT reconnect works with timer
   ESP_SmartHomeDevice::loop();
@@ -45,7 +61,7 @@ void setupArduinoOta(){
   ArduinoOTA.setHostname(MODUL_NAME);
 
   // set Password in hash value
-  //ArduinoOTA.setPassword("Dihiw2007");
+  //ArduinoOTA.setPassword("Test1234");
 
   ArduinoOTA
     .onStart([]() {
