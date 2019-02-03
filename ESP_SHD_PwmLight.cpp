@@ -1,26 +1,26 @@
-#include "ESP_ShdPwmLight.h"
+#include "ESP_SHD_PwmLight.h"
 #include "pwm.h"
 
-#define DEBUG 10
+#define DEBUG 0
 
 bool ShdPwmLight::firstRun = true;
 uint8_t ShdPwmLight::numberOfPwmPins = 0;
 uint32_t ShdPwmLight::pwmDutyInit[MAX_PWM_CHANNELS];
 uint32_t ShdPwmLight::ioInfo[MAX_PWM_CHANNELS][3];
-uint32_t ShdPwmLight::gammaCorrection[101] = {
-  0, 1, 4, 10, 20, 33, 51, 72,
-  98, 129, 164, 204, 250, 300, 356, 417,
-  484, 557, 635, 719, 809, 905, 1007, 1115,
-  1230, 1351, 1479, 1613, 1753, 1901, 2055, 2216,
-  2384, 2559, 2741, 2929, 3126, 3329, 3539, 3757,
-  3983, 4215, 4456, 4703, 4959, 5222, 5493, 5771,
-  6057, 6352, 6654, 6964, 7282, 7608, 7942, 8285,
-  8635, 8994, 9361, 9736, 10120, 10512, 10913, 11322,
-  11740, 12166, 12600, 13044, 13496, 13957, 14427, 14905,
-  15392, 15888, 16393, 16907, 17430, 17962, 18504, 19054,
-  19613, 20181, 20759, 21346, 21942, 22548, 23162, 23787,
-  24420, 25063, 25715, 26377, 27049, 27730, 28420, 29121,
-  29830, 30550, 31279, 32018, 32767
+uint16_t ShdPwmLight::gammaCorrection[101] = {
+  	0, 1, 4, 10, 20, 33, 51, 72,
+  	98, 129, 164, 204, 250, 300, 356, 417,
+  	484, 557, 635, 719, 809, 905, 1007, 1115,
+  	1230, 1351, 1479, 1613, 1753, 1901, 2055, 2216,
+  	2384, 2559, 2741, 2929, 3126, 3329, 3539, 3757,
+  	3983, 4215, 4456, 4703, 4959, 5222, 5493, 5771,
+  	6057, 6352, 6654, 6964, 7282, 7608, 7942, 8285,
+  	8635, 8994, 9361, 9736, 10120, 10512, 10913, 11322,
+  	11740, 12166, 12600, 13044, 13496, 13957, 14427, 14905,
+  	15392, 15888, 16393, 16907, 17430, 17962, 18504, 19054,
+  	19613, 20181, 20759, 21346, 21942, 22548, 23162, 23787,
+  	24420, 25063, 25715, 26377, 27049, 27730, 28420, 29121,
+  	29830, 30550, 31279, 32018, 32767
 };
 
 ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength){
@@ -41,7 +41,7 @@ ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInt
   snprintf (subTopicBrightness, 60, "%s/PwmLight/%d/setBrightness", name, numberOfPwmPins);
   snprintf (subTopicState, 60, "%s/PwmLight/%d/setStatus", name, numberOfPwmPins);
 
-  resubscribe();
+  resubpub();
 
   pwmDutyInit[pwmNumber] = 0;
   pinMode(pin, OUTPUT);
@@ -139,8 +139,14 @@ void ShdPwmLight::timer5msHandler() {
 bool ShdPwmLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint16_t _length){
   if (strcmp(_topic, subTopicState) == 0) {
     if (_payload[0] == 0x30) {
+      #if DEBUG > 3
+      Serial.println("SHD: PwmLight: OFF");
+      #endif
       setBrightness(0);
     } else if (_payload[0] == 0x31) {
+      #if DEBUG > 3
+      Serial.println("SHD: PwmLight: ON");
+      #endif
       setBrightness(lastBrightnessGreaterZero);
     }
   } else if (strcmp(_topic, subTopicBrightness) == 0) {
@@ -175,14 +181,28 @@ void ShdPwmLight::setBrightness(uint8_t _percentage){
   flankOver = false;
 }
 
-void ShdPwmLight::resubscribe(){
+void ShdPwmLight::resubpub(){
   mqttClient.subscribe(subTopicBrightness, 0);
+  #if DEBUG > 0
   Serial.print("SHD: PwmLight subscribed to ");
   Serial.println(subTopicBrightness);
+  #endif
 
   mqttClient.subscribe(subTopicState, 0);
+  #if DEBUG > 0
   Serial.print("SHD: PwmLight subscribed to ");
   Serial.println(subTopicState);
+  #endif
+
+  if (currentBrightness != 0) {
+    mqttClient.publish(pubTopicState, "1");
+  } else {
+    mqttClient.publish(pubTopicState, "0");
+  }
+  char payload[5];
+  snprintf (payload, 5, "%d", setPoint);
+  mqttClient.publish(pubTopicBrightness, payload);
+
 }
 
 bool ShdPwmLight::addIoInfo(){

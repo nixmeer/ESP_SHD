@@ -8,7 +8,7 @@ public:
 private:
   bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length);
   void timer5msHandler();
-  void resubscribe();
+  void resubpub();
   void setBrightness(uint8_t _percentage);
   bool addIoInfo();
   bool lowActive;
@@ -20,12 +20,12 @@ private:
   uint32_t millisLastUpdate;
   uint32_t millisUpdateInterval;
   bool flankOver;
-  char pubTopicBrightness[60], pubTopicState[60], subTopicState[60], subTopicBrightness[60];
+  char pubTopicBrightness[70], pubTopicState[70], subTopicState[70], subTopicBrightness[70];
 
   static bool firstRun;
   static uint8_t numberOfPwmPins;
   static uint32_t pwmDutyInit[MAX_PWM_CHANNELS];
   static uint32_t ioInfo[MAX_PWM_CHANNELS][3];
 
-  static uint32_t gammaCorrection[101];
+  static uint16_t gammaCorrection[101];
 };
