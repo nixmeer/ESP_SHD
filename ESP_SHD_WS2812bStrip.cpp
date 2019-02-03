@@ -2,10 +2,8 @@
 #include "FastLED.h"
 #include <FunctionalInterrupt.h>
 
-#define DEBUG 2
-
-uint16_t ShdWs2812bStrip::millisLastStripUpdate;
-uint16_t ShdWs2812bStrip::millisStripUpdateInterval;
+uint32_t ShdWs2812bStrip::millisLastStripUpdate;
+uint32_t ShdWs2812bStrip::millisStripUpdateInterval;
 CRGB ShdWs2812bStrip::leds[MAX_NUM_OF_LEDS];
 ShdWs2812bStrip * ShdWs2812bStrip::sections[MAX_NUM_OF_SECTIONS];
 uint16_t ShdWs2812bStrip::numberOfLeds = 0;
@@ -35,6 +33,7 @@ void ShdWs2812bStrip::show(){
     return;
   }
 
+  // return, if none of the sections is igniting
   bool currentlyIgniting = false;
   for (uint8_t i = 0 ; i < numberOfSections; i++) {
     if (sections[i]->igniting) {
@@ -49,16 +48,13 @@ void ShdWs2812bStrip::show(){
   // see if it's time to update the strip:
   uint32_t currentMillis = millis();
 
-  uint32_t millisSinceLastUpdate = (uint32_t)(currentMillis - millisLastStripUpdate);
-
-  if ((uint32_t)millisSinceLastUpdate >= (uint32_t)millisStripUpdateInterval) {
+  if (currentMillis - millisLastStripUpdate >= millisStripUpdateInterval) {
 
     // TODO! Checken, warum die while-Schleife nicht funktioniert  <------------------------------
     // update millisLastStripUpdate:
-    // while (millisSinceLastUpdate >= millisStripUpdateInterval) {
-    //   millisLastStripUpdate += millisStripUpdateInterval;
-    //   millisSinceLastUpdate -= (uint32_t)(currentMillis - millisLastStripUpdate);
-    // }
+    while (currentMillis - millisLastStripUpdate > millisStripUpdateInterval) {
+      millisLastStripUpdate += millisStripUpdateInterval;
+    }
     millisLastStripUpdate = millis();
 
     // update the LED strip:
@@ -86,7 +82,7 @@ void ShdWs2812bStrip::initStrip(uint16_t _numberOfLeds, uint16_t _updateInterval
     millisLastStripUpdate = millis();
     millisStripUpdateInterval = _updateInterval;
 
-    FastLED.setCorrection(0xFFA0A0);
+    FastLED.setCorrection(0xFFCAAA);
     FastLED.setTemperature(HighNoonSun);
 
     Serial.println();
@@ -140,7 +136,7 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
   snprintf (pubTopicState, 50, "%s/Lamp/%d/getStatus", name, sectionNumber);
   snprintf (pubTopicBrightness, 50, "%s/Lamp/%d/getBrightness", name, sectionNumber);
 
-  resubscribe();
+  resubpub();
 
   direction = _ignitionDirection;
   if (direction == IGNITION_SINGLE_BACKWARD || direction == IGNITION_BOTH_BACKWARD ) {
@@ -440,7 +436,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
     Serial.println(payloadBuffer);
     #endif
 
-    // publish brightness:
+    // publish new brightness:
     clearPayloadBuffer();
     uint16_t brightness = (max(max(setPoint[0], setPoint[1]), setPoint[2]) / 652);
     snprintf(payloadBuffer, 50, "%d", brightness);
@@ -473,7 +469,7 @@ bool ShdWs2812bStrip::fillLedWithNewColor(uint16_t _ledIndex) {
     Serial.print(shownValue[i]);
     Serial.print(", ");
     #endif
-    leds[_ledIndex][i] = gammaCorrection[shownValue[i] >> 8];
+    leds[_ledIndex][i] = shownValue[i] >> 8;
   }
   #if DEBUG >= 5
   Serial.print("flankOver: ");
@@ -544,7 +540,7 @@ void ShdWs2812bStrip::clearPayloadBuffer(){
 }
 
 void ShdWs2812bStrip::timer5msHandler(){
-  if (sectionNumber == 1) {
+  if (sectionNumber == numberOfSections) {
     show();
   }
 }
@@ -557,12 +553,34 @@ void ShdWs2812bStrip::callIgnitionFunction(){
   }
 }
 
-void ShdWs2812bStrip::resubscribe() {
+void ShdWs2812bStrip::resubpub() {
   mqttClient.subscribe(subTopicColor, 0);
+  #if DEBUG > 0
   Serial.print("WS2812b: Subscribed to ");
   Serial.println(subTopicColor);
+  #endif
 
   mqttClient.subscribe(subTopicState, 0);
+  #if DEBUG > 0
   Serial.print("WS2812b: Subscribed to ");
   Serial.println(subTopicState);
+  #endif
+
+  // publish current status:
+  if (setPoint[0] == 0 && setPoint[1] == 0 && setPoint[2] == 0) {
+    mqttClient.publish(pubTopicState, "0");
+  } else {
+    mqttClient.publish(pubTopicState, "1");
+  }
+
+  // publish color:
+  clearPayloadBuffer();
+  snprintf(payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
+  mqttClient.publish(pubTopicColor, payloadBuffer);
+
+  // publish brightness:
+  clearPayloadBuffer();
+  uint16_t brightness = (max(max(setPoint[0], setPoint[1]), setPoint[2]) / 652);
+  snprintf(payloadBuffer, 50, "%d", brightness);
+  mqttClient.publish(pubTopicBrightness, payloadBuffer);
 }

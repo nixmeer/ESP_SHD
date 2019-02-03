@@ -1,6 +1,8 @@
 #ifndef ESP_SHD_LEDSTRIP
 #define ESP_SHD_LEDSTRIP
 
+#define DEBUG 3
+
 #define FASTLED_ESP8266_RAW_PIN_ORDER
 
 #include "ESP_SmartHomeDevice.h"
@@ -26,8 +28,8 @@ private:
   static void show();
   static CRGB leds[MAX_NUM_OF_LEDS];
   static uint16_t numberOfLeds;
-  static uint16_t millisLastStripUpdate;
-  static uint16_t millisStripUpdateInterval;
+  static uint32_t millisLastStripUpdate;
+  static uint32_t millisStripUpdateInterval;
   static uint8_t numberOfSections;
   static ShdWs2812bStrip * sections[MAX_NUM_OF_SECTIONS];
   static bool correctlyInitialized;
@@ -63,7 +65,7 @@ private:
   bool fillLedWithNewColor(uint16_t _ledIndex);
   bool fillLedWithNewColor(uint16_t _ledIndex1, uint16_t _ledIndex2);
   void clearPayloadBuffer();
-  void resubscribe();
+  void resubpub();
   void changeStatus();
 };
 
