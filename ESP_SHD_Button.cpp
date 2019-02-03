@@ -92,6 +92,6 @@ bool ShdButton::handleMqttRequest(char *_topic, unsigned char *_payload, uint16_
   return false;
 }
 
-void ShdButton::resubscribe(){
+void ShdButton::resubpub(){
   return;
 }

@@ -53,6 +53,6 @@ void ShdTemperatureSensor::publishTemperature() {
   }
 }
 
-void ShdTemperatureSensor::resubscribe() {
-  return;
+void ShdTemperatureSensor::resubpub() {
+  publishTemperature();
 }

@@ -20,7 +20,7 @@ private:
   void publishTemperature();
   void timer5msHandler();
   int timerCounter;
-  void resubscribe();
+  void resubpub();
 };
 
 #endif

@@ -14,7 +14,7 @@ private:
   void pinChange();
   char pubTopic[50];
   void timer5msHandler();
-  void resubscribe();
+  void resubpub();
 };
 
 #endif

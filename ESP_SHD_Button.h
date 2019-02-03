@@ -10,7 +10,7 @@ private:
 
   void timer5msHandler();
   bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length);
-  void resubscribe();
+  void resubpub();
 
   void handleInterrupt();
 

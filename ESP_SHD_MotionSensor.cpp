@@ -75,6 +75,10 @@ void ShdMotionSensor::pinChange(){
 }
 
 
-void ShdMotionSensor::resubscribe() {
-  return;
+void ShdMotionSensor::resubpub() {
+  if (motionSensorStatus) {
+    mqttClient.publish(pubTopic, "true");
+  } else {
+    mqttClient.publish(pubTopic, "false");
+  }
 }
