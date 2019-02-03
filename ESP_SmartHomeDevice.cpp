@@ -137,15 +137,15 @@ void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, un
 
 
 void ESP_SmartHomeDevice::loop(){//void *pArg){
-
-
-  if(micros() - last5msTimer > 5000){
-    while (micros() - last5msTimer > 5000) {
+  uint32_t currentMicros = micros();
+  if(currentMicros - last5msTimer > 5000){
+    while (currentMicros - last5msTimer > 5000) {
       last5msTimer += 5000;
     }
 
     if (!mqttClient.loop()) {
       reconnect();
+      return;
     }
 
     for (size_t i = 0; i < numberOfShds; i++) {
@@ -169,10 +169,10 @@ void ESP_SmartHomeDevice::reconnect(){
       reconnectMqtt(mqttServerAddress, port);
     }
 
-    // if reconnecting has been successfull, resubscribe to all topics:
+    // if reconnecting has been successfull, resubscribe to all topics and publish current states:
     if (mqttClient.connected()) {
       for (size_t i = 0; i < numberOfShds; i++) {
-        shds[i]->resubscribe();
+        shds[i]->resubpub();
       }
       Serial.println("Successfully (re-)subscribed.");
     }  else {
