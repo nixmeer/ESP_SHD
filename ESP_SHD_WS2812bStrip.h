@@ -1,8 +1,6 @@
 #ifndef ESP_SHD_LEDSTRIP
 #define ESP_SHD_LEDSTRIP
 
-#define DEBUG 3
-
 #define FASTLED_ESP8266_RAW_PIN_ORDER
 
 #include "ESP_SmartHomeDevice.h"
@@ -13,6 +11,7 @@
 #define MAX_NUM_OF_SECTIONS 5
 
 #define DATA_PIN 4
+#define DEBUG 0
 
 enum ignitionDirection { IGNITION_SINGLE_FORWARD, IGNITION_SINGLE_BACKWARD, IGNITION_BOTH_FORWARD, IGNITION_BOTH_BACKWARD };
 

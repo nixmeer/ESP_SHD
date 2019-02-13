@@ -40,6 +40,7 @@ void ShdWs2812bStrip::show(){
       currentlyIgniting = true;
     }
   }
+
   if (!currentlyIgniting) {
     return;
   }
@@ -85,6 +86,12 @@ void ShdWs2812bStrip::initStrip(uint16_t _numberOfLeds, uint16_t _updateInterval
     FastLED.setCorrection(0xFFCAAA);
     FastLED.setTemperature(HighNoonSun);
 
+    // set all black:
+    for (uint8_t i = 0; i < MAX_NUM_OF_LEDS; i++) {
+      leds[i] = CRGB::Black;
+    }
+    FastLED.show();
+
     Serial.println();
     Serial.print("WS2812b strip initialized. Update interval: ");
     Serial.print(millisStripUpdateInterval);
@@ -112,8 +119,10 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
 
   sectionLength = lastLed - firstLed + 1;
 
-  if (_ignitionPoint > 0 && _ignitionPoint <= sectionLength) {
+  if (_ignitionPoint >= _firstLed && _ignitionPoint <= _lastLed) {
     ignitionPoint = _ignitionPoint - 1;
+  } else {
+    ignitionPoint = firstLed;
   }
 
   // check if hopsPerShow > 0
@@ -128,6 +137,7 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
   for (uint8_t i = 0; i < 3; i++) {
     savedValue[i] = 255;
     shownValue[i] = 0;
+    setPoint[i] = 0;
   }
 
   snprintf (subTopicColor, 50, "%s/Lamp/%d/setColor", name, sectionNumber);
@@ -135,8 +145,6 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
   snprintf (subTopicState, 50, "%s/Lamp/%d/setStatus", name, sectionNumber);
   snprintf (pubTopicState, 50, "%s/Lamp/%d/getStatus", name, sectionNumber);
   snprintf (pubTopicBrightness, 50, "%s/Lamp/%d/getBrightness", name, sectionNumber);
-
-  resubpub();
 
   direction = _ignitionDirection;
   if (direction == IGNITION_SINGLE_BACKWARD || direction == IGNITION_BOTH_BACKWARD ) {
@@ -147,18 +155,25 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
 
   igniting = false;
 
-  for (uint8_t i = firstLed; i <= lastLed; i++) {
-    leds[i] = CRGB::Black;
-  }
+  #if DEBUG > 0
+  Serial.print("WS2812b: firstLed: ");
+  Serial.print(firstLed);
+  leds[firstLed] = CRGB::Red;
+  Serial.print(", ignitionPoint: ");
+  Serial.print(ignitionPoint);
+  leds[ignitionPoint] = CRGB::Green;
+  Serial.print(", lastLed: ");
+  Serial.println(lastLed);
+  leds[lastLed] = CRGB::Blue;
+  #endif
   FastLED.show();
 
+  #if DEBUG > 0
   Serial.print("WS2812b: section no. ");
   Serial.print(sectionNumber);
-  Serial.print(" registered. It subscribed to ");
-  Serial.print(subTopicState);
-  Serial.print(" and ");
-  Serial.print(subTopicColor);
+  Serial.print(" registered.");
   Serial.println();
+  #endif
 }
 
 void ShdWs2812bStrip::igniteSingleDir(){
@@ -168,9 +183,9 @@ void ShdWs2812bStrip::igniteSingleDir(){
     // shift as many LEDs as possible. Every LED value jumps for hopsPerShow
     int16_t targetLed;
     if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
-      targetLed = firstLed + ignitionPoint + i;
+      targetLed = ignitionPoint + i;
     } else {
-      targetLed = firstLed + ignitionPoint - i;
+      targetLed = ignitionPoint - i;
     }
     if (targetLed > lastLed) {
       targetLed -= sectionLength;
@@ -251,16 +266,21 @@ void ShdWs2812bStrip::igniteBothDir(){
 
     int16_t targetLed1, targetLed2;
     if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
-      targetLed1 = firstLed + ignitionPoint + i;
-      targetLed2 = firstLed + ignitionPoint - i;
+      targetLed1 = ignitionPoint + i;
+      targetLed2 = ignitionPoint - i;
     } else {
-      targetLed1 = firstLed + ignitionPoint + sectionLength/2 - i;
-      targetLed2 = firstLed + ignitionPoint + sectionLength/2 + i;
+      targetLed1 = ignitionPoint + sectionLength/2 - i;
+      targetLed2 = ignitionPoint + sectionLength/2 + i;
     }
     if (targetLed1 > lastLed) {
       targetLed1 -= sectionLength;
     } else if (targetLed1 < firstLed) {
       targetLed1 += sectionLength;
+    }
+    if (targetLed2 > lastLed) {
+      targetLed2 -= sectionLength;
+    } else if (targetLed2 < firstLed) {
+      targetLed2 += sectionLength;
     }
 
     int16_t sourceLed1, sourceLed2;
@@ -271,12 +291,6 @@ void ShdWs2812bStrip::igniteBothDir(){
       sourceLed1 = targetLed1 + hopsPerShow;
       sourceLed2 = targetLed2 - hopsPerShow;
     }
-    if (targetLed2 > lastLed) {
-      targetLed2 -= sectionLength;
-    } else if (targetLed2 < firstLed) {
-      targetLed2 += sectionLength;
-    }
-
     if (sourceLed1 > lastLed) {
       sourceLed1 -= sectionLength;
     } else if (sourceLed1 < firstLed) {
@@ -310,11 +324,11 @@ void ShdWs2812bStrip::igniteBothDir(){
   for (uint8_t i = hopsPerShow; i > 0; i--) {
     int16_t targetLed1, targetLed2;
     if ((!directionInverted && !directionTmpInverted) || (directionInverted && directionTmpInverted)) {
-      targetLed1 = firstLed + ignitionPoint + (i - 1);
-      targetLed2 = firstLed + ignitionPoint - (i - 1);
+      targetLed1 = ignitionPoint + (i - 1);
+      targetLed2 = ignitionPoint - (i - 1);
     } else {
-      targetLed1 = firstLed + ignitionPoint + sectionLength/2 - (i - 1);
-      targetLed2 = firstLed + ignitionPoint + sectionLength/2 + (i - 1);
+      targetLed1 = ignitionPoint + sectionLength/2 - (i - 1);
+      targetLed2 = ignitionPoint + sectionLength/2 + (i - 1);
     }
 
     if (targetLed1 > lastLed) {
@@ -365,11 +379,11 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   Serial.print(", ");
   Serial.print(_newBlue);
   Serial.print(", old set point: ");
-  Serial.print(setPoint[0]);
+  Serial.print(setPoint[0] >> 8);
   Serial.print(",");
-  Serial.print(setPoint[1]);
+  Serial.print(setPoint[1] >> 8);
   Serial.print(",");
-  Serial.print(setPoint[2]);
+  Serial.print(setPoint[2] >> 8);
   #endif
 
   // avoid turning on with 255,255,255 via color
@@ -379,13 +393,17 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
     _newBlue = savedValue[2];
   }
 
-  if (_newRed == 0 && _newBlue == 0 && _newGreen == 0) {
-    directionTmpInverted = true;
-  } else {
-    directionTmpInverted = false;
+  if (_newRed != 0 && _newBlue != 0 && _newGreen != 0) {
     savedValue[0] = _newRed;
     savedValue[1] = _newGreen;
     savedValue[2] = _newBlue;
+  }
+
+  // if new brightness is less bright than setPoint, invert direction temporarely
+  if ((max(max(_newRed, _newGreen), _newBlue)) < (max(max(setPoint[0] >> 8, setPoint[1] >> 8), setPoint[2] >> 8)) ) {
+    directionTmpInverted = true;
+  } else {
+    directionTmpInverted = false;
   }
 
   #if DEBUG >= 2
