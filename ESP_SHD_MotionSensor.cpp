@@ -1,8 +1,6 @@
 #include "ESP_SHD_MotionSensor.h"
 #include <FunctionalInterrupt.h>
 
-#define DEBUG 0
-
 ShdMotionSensor::ShdMotionSensor(uint8_t _pin){
 
   // prepare pin and attach interrupt:

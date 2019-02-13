@@ -8,9 +8,11 @@ ShdTemperatureSensor::ShdTemperatureSensor(){
   snprintf (pubTopic, 50, "%s/Temperature", name);
 
   // debug output:
-  Serial.print("New temperature sensor registered. It publishes to ");
+  #if DEBUG > 0
+  Serial.print("TMP: New temperature sensor registered. It publishes to ");
   Serial.println(pubTopic);
-  Serial.println();
+  Serial.print();
+  #endif
 }
 
 bool ShdTemperatureSensor::handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length){

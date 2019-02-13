@@ -1,7 +1,5 @@
 #include "ESP_SmartHomeDevice.h"
 
-#define DEBUG 0
-
 ESP_SmartHomeDevice* ESP_SmartHomeDevice::shds[MAX_SHDS];
 PubSubClient ESP_SmartHomeDevice::mqttClient;
 WiFiClient ESP_SmartHomeDevice::wifiClient;
@@ -90,9 +88,9 @@ void ESP_SmartHomeDevice::reconnectMqtt(const char* _mqttServerAddress, uint16_t
   mqttClient.setCallback(ESP_SmartHomeDevice::mqttCallback);
 
   if (mqttClient.connect(name)) {
-    Serial.print("SHD: Now successfully connected to MQTT server. ");
+    Serial.println("MQTT: Now successfully connected to broker. ");
   } else {
-    Serial.print("SHD: 1 mqtt service found via mDNS but connecting to MQTT server failed.");
+    Serial.println("MQTT: 1 mqtt service found via mDNS but connecting to broker failed.");
   }
 
   // os_timer_setfn(&ESP_SmartHomeDevice::loopTimer, &ESP_SmartHomeDevice::loop, NULL);
@@ -107,9 +105,9 @@ void ESP_SmartHomeDevice::reconnectMqtt(IPAddress _mqttServerAddress, uint16_t _
   mqttClient.setCallback(ESP_SmartHomeDevice::mqttCallback);
 
   if (mqttClient.connect(name)) {
-    Serial.print("SHD: Now successfully connected to MQTT server. ");
+    Serial.println("MQTT: Now successfully connected to broker. ");
   } else {
-    Serial.print("SHD: 1 mqtt service found via mDNS but connecting to MQTT server failed.");
+    Serial.println("MQTT: 1 mqtt service found via mDNS but connecting to broker failed.");
   }
 
   // os_timer_setfn(&ESP_SmartHomeDevice::loopTimer, &ESP_SmartHomeDevice::loop, NULL);
@@ -135,7 +133,6 @@ void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, un
   }
 }
 
-
 void ESP_SmartHomeDevice::loop(){//void *pArg){
   uint32_t currentMicros = micros();
   if(currentMicros - last5msTimer > 5000){
@@ -144,6 +141,9 @@ void ESP_SmartHomeDevice::loop(){//void *pArg){
     }
 
     if (!mqttClient.loop()) {
+      #if DEBUG > 0
+      Serial.println("MQTT: loop() returned false.");
+      #endif
       reconnect();
       return;
     }

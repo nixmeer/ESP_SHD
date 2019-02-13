@@ -1,8 +1,6 @@
 #include "ESP_SHD_PwmLight.h"
 #include "pwm.h"
 
-#define DEBUG 0
-
 bool ShdPwmLight::firstRun = true;
 uint8_t ShdPwmLight::numberOfPwmPins = 0;
 uint32_t ShdPwmLight::pwmDutyInit[MAX_PWM_CHANNELS];
