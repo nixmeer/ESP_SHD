@@ -58,13 +58,13 @@ void ESP_SmartHomeDevice::reconnectMqtt(){
   // find mqtt broker using mDNS:
   if (!MDNS.begin(name)) {
     Serial.println("Trying to connect to mDNS.");
-    uint16_t mdnsMillis = millis();
+    uint32_t mdnsMillis = millis();
     while (!MDNS.begin(name)) {
       Serial.print(".");
-      delay(500);
-      if (mdnsMillis - millis() > 2001) {
-        Serial.println(" No mDNS found.");
-        return;
+      delay(200);
+      if (millis() - mdnsMillis > 5001) {
+        Serial.println("No mDNS found.");
+        break;
       }
     }
   }
