@@ -46,6 +46,14 @@ ShdWs2812bStrip subscribes to `_name/Lamp/_sectionNumber/setColor` and `_name/La
 ShdWs2812bStrip publishes its status (0 and 1) to `_name/Lamp/_sectionNumber/getStatus`, its color to `_name/Lamp/_sectionNumber/getColor` and publishes its brightness to `_name/Lamp/_sectionNumber/getBrightness`.
 ### Button
 To add a new button, call `new ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)`. It publishes to `_name/Button/_buttonNumber`. `_buttonNumber` is increased for every new button starting at 1.
+# Hardware
+This repository contains the eagle and gerber files of the first generation SHD hardware. The PCBs can be ordered from jlcpcb.com or any other pcb manufacturer. The following parts are necessary for full assembly:
+- ESP12f module
+- XC6206 voltage regulator
+- TMP36 temperature sensor
+- BC856 transistor (level shift from 3.3 to 5.0 V for WS2812b)
+- 6 resistors (1x330R, 3x3k30, 2x10k0)
+- screw terminals (1x 2 way, 2x 3 way)
 # mosquitto broker on raspberry pi
 You can use any mqtt broker with this code. In order to have all devices run stable and reconnect after a loss of power, it's recommended to use mDNS to expose the a mqtt broker service to the network, so all SHDs can automatically connect to it. After installing mosquitto on the raspberry pi, call `sudo nano /etc/avahi/services/mqtt.service`. Fill the following:
 ```
