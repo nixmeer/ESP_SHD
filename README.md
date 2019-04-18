@@ -9,13 +9,15 @@ Keep it simple and stupid. Everyone should be able to build his or her smart hom
 - [x] TMP36 sensors
 - [x] Motion sensors
 - [x] PWM light
+- [ ] Relay/Switch
+- [ ] Sprinkler
 ## Libraries used
 - [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino)
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary
 - [FastLED](https://github.com/FastLED/FastLED) by FastLED
 - [WiFiManager](https://github.com/tzapu/WiFiManager) by tzapu
 ## Code Structure
-There is a separate class for each device which is implemented as a child class of ESP_SmartHomeDevice. After initializing ESP_SmartHomeDevice, objects of these classes can be created and used. All of these objects use a single mqtt client which is provided by ESP_SmartHomeDevice. Each child class of ESP_SmartHomeDevice has to implement the following member functions:
+There is a separate class for each device. Every device is implemented as a child class of ESP_SmartHomeDevice. After initializing ESP_SmartHomeDevice, objects of these classes can be created. All of these objects use a single mqtt client which is provided by ESP_SmartHomeDevice. Each child class of ESP_SmartHomeDevice has to implement the following member functions:
 - `bool handleMqttRequest(char * _topic, unsigned char * _payload, uint16_t _length)` is being called after a request has been pushed to the mqtt client
 - `void resubscribe()` is being called after the connection to the mqtt broker was lost
 - `void timer5msHandler()` is being called every 5 ms
