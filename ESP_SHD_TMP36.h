@@ -1,5 +1,5 @@
-#ifndef ESP_SHD_TEMPERATURE_SENSOR
-#define ESP_SHD_TEMPERATURE_SENSOR
+#ifndef ESP_SHD_TMP36_SENSOR
+#define ESP_SHD_TMP36_SENSOR
 
 #define PUBLISH_TIME_IN_MS 500
 
@@ -9,9 +9,9 @@ extern "C" {
 #include "PubSubClient.h"
 #include "ESP_SmartHomeDevice.h"
 
-class ShdTemperatureSensor : public ESP_SmartHomeDevice {
+class ShdTmp36Sensor : public ESP_SmartHomeDevice {
 public:
-  ShdTemperatureSensor();
+  ShdTmp36Sensor();
 private:
   bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length);
   char pubTopic[50];

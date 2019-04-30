@@ -1,8 +1,8 @@
-#include "ESP_SHD_TemperatureSensor.h"
+#include "ESP_SHD_TMP36.h"
 
 #define DEBUG 0
 
-ShdTemperatureSensor::ShdTemperatureSensor(){
+ShdTmp36Sensor::ShdTmp36Sensor(){
   timerCounter = 0;
 
   snprintf (pubTopic, 50, "%s/Temperature", name);
@@ -15,11 +15,11 @@ ShdTemperatureSensor::ShdTemperatureSensor(){
   #endif
 }
 
-bool ShdTemperatureSensor::handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length){
+bool ShdTmp36Sensor::handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length){
   return false;
 }
 
-void ShdTemperatureSensor::timer5msHandler(){
+void ShdTmp36Sensor::timer5msHandler(){
   timerCounter++;
   if (timerCounter > 6000) {
     publishTemperature();
@@ -27,7 +27,7 @@ void ShdTemperatureSensor::timer5msHandler(){
   }
 }
 
-void ShdTemperatureSensor::publishTemperature() {
+void ShdTmp36Sensor::publishTemperature() {
 
   int adcValue = analogRead(A0);
   float temperature = 0.07326 * adcValue - 39.9767;
@@ -55,6 +55,6 @@ void ShdTemperatureSensor::publishTemperature() {
   }
 }
 
-void ShdTemperatureSensor::resubpub() {
+void ShdTmp36Sensor::resubpub() {
   publishTemperature();
 }
