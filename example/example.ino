@@ -2,10 +2,11 @@
 #include <ArduinoOTA.h>
 #include "ESP_SmartHomeDevice.h"
 #include "ESP_SHD_MotionSensor.h"
-#include "ESP_SHD_TemperatureSensor.h"
+#include "ESP_SHD_TMP36.h"
+#include "ESP_SHD_DS18B20.h"
 #include "ESP_SHD_WS2812bStrip.h"
 #include "ESP_SHD_Button.h"
-#include "ESP_ShdPwmLight.h"
+#include "ESP_SHD_PwmLight.h"
 #include "ESP_SHD_Sprinkler.h"
 
 // activate Arduino OTA:
@@ -19,7 +20,7 @@ void setup() {
 
   #ifdef OTA
   setupArduinoOta();
-  #eindif
+  #endif
 
   ESP_SmartHomeDevice::init(MODUL_NAME);
 
@@ -31,13 +32,17 @@ void setup() {
   new ShdMotionSensor(5); // standard pin: 5, old pin: 10
   // ShdMotionSensor(uint8_t _pin);
 
-  // Adding a temoerature sensor:
+  // Adding a TMP36 sensor:
   new ShdTmp36Sensor();
+
+  // Adding a DS18B20 sensor:
+  new ShdDs18b20Sensor(6);
+  // ShdDs18b20Sensor(uint8_t _pin);
 
   // Adding a WS2812b strip with two sections:
   ShdWs2812bStrip::initStrip(122, 25);
   new ShdWs2812bStrip(1, 100, 1, IGNITION_BOTH_FORWARD, 1, 30);
-  new ShdWs2812bStrip(101, 122, IGNITION_SINGLE_FORWARD, 1, 25);
+  new ShdWs2812bStrip(101, 122, 101, IGNITION_SINGLE_FORWARD, 1, 25);
   // ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
 
   // Adding a button:
