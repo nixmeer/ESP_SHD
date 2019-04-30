@@ -31,7 +31,7 @@ MQTT topics do always begin with the `_name` parameter initialized here.
 ### Motion Sensor
 To add a motion sensor, just call `new ShdMotionSensor(uint8_t _pin)`. It publishes it's status (`true` or `false` as char) to `_name/Motion`.
 ### Temperature Sensor
-To add a temperature sensor, just call `new ShdTemperatureSensor()`. No pin is needed, since there is only one ADC available in the ESP8266. It publishes the temperature to `_name/Temperature`.
+To add a temperature sensor, just call `new ShdTmp36Sensor()`. No pin is needed, since there is only one ADC available in the ESP8266. It publishes the temperature to `_name/Temperature`.
 ### WS2812b strip
 Only stips at pin 4 are Supported.
 Call ` ShdWs2812bStrip::initStrip(uint16_t _numberOfLeds, uint16_t _updateInterval)`. First argument sets the number of LEDs of the entire strip, second argument sets the update interval for the strip in milliseconds. 41 ms (24 fps) looked jerky, 25 ms (40 fps) looks much better.
