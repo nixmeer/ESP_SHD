@@ -1,6 +1,7 @@
 #include "ESP_SmartHomeDevice.h"
 
 #define MAX_PWM_CHANNELS 5
+#define DEBUG 4
 
 class ShdPwmLight : public ESP_SmartHomeDevice {
 public:

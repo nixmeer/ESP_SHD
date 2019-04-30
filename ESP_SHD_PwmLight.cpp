@@ -46,8 +46,8 @@ ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInt
   addIoInfo();
 
   // debug output:
-  Serial.print("New pwm light ");
-  Serial.print(pwmNumber);
+  Serial.print("PWM: New pwm light ");
+  Serial.print(numberOfPwmPins);
   Serial.print(" registered. It subscribed to ");
   Serial.print(subTopicBrightness);
   Serial.print(" and ");
@@ -148,6 +148,11 @@ bool ShdPwmLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint1
       setBrightness(lastBrightnessGreaterZero);
     }
   } else if (strcmp(_topic, subTopicBrightness) == 0) {
+    #if DEBUG > 3
+    Serial.print("SHD: PwmLight: Brightness set to ");
+    Serial.print(atoi((char*)_payload));
+    Serial.println(" %");
+    #endif
     setBrightness(atoi((char*)_payload));
   } else {
     return false;
