@@ -22,6 +22,14 @@ ShdButton::ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, ui
 
   snprintf (pubTopic, 50, "%s/Button/%d", name, numberOfButtons);
 
+  singleClickCallback = NULL;
+  doubleClickCallback = NULL;
+  longClickCallback = NULL;
+
+  singleClickObject = NULL;
+  doubleClickObject = NULL;
+  longClickObject = NULL;
+
   // debug output:
   Serial.print("New button registered. It publishes to ");
   Serial.print(pubTopic);
@@ -46,18 +54,27 @@ void ShdButton::timer5msHandler(){
   if (clickCounter > 0) {
     uint32_t currentMillis = millis();
     if (clickCounter == 1 && currentlyClicked == false && currentMillis - firstClickTime > millisMultiClick) {
-      if (mqttClient.publish(pubTopic, "1")) {
+      if (singleClickCallback == NULL) {
+        if (mqttClient.publish(pubTopic, "1")) {
+          #if DEBUG > 1
+          Serial.print("Button event has been published to ");
+          Serial.print(pubTopic);
+          Serial.print(" at ");
+          Serial.print(millis());
+          Serial.print(" value: ");
+          Serial.println("1");
+          #endif
+        }
+      } else {
+        singleClickCallback(singleClickObject);
         #if DEBUG > 1
-        Serial.print("Button event has been published to ");
-        Serial.print(pubTopic);
-        Serial.print(" at ");
-        Serial.print(millis());
-        Serial.print(" value: ");
-        Serial.println("L");
         #endif
       }
       clickCounter = 0;
     } else if (clickCounter >= 2 && currentlyClicked == false && currentMillis - firstClickTime > millisMultiClick){
+      if (doubleClickCallback) {
+        /* code */
+      }
       if (mqttClient.publish(pubTopic, "2")) {
         #if DEBUG > 1
         Serial.print("Button event has been published to ");
@@ -65,7 +82,7 @@ void ShdButton::timer5msHandler(){
         Serial.print(" at ");
         Serial.print(millis());
         Serial.print(" value: ");
-        Serial.println("L");
+        Serial.println("2");
         #endif
       }
       clickCounter = 0;
@@ -90,6 +107,21 @@ void ShdButton::timer5msHandler(){
 
 bool ShdButton::handleMqttRequest(char *_topic, unsigned char *_payload, uint16_t _length){
   return false;
+}
+
+void ShdButton::setSingleClickCallback(void (*_singleClickCallback)(void *), void *_objectPointer) {
+  singleClickObject = _objectPointer;
+  singleClickCallback = _singleClickCallback;
+}
+
+void ShdButton::setDoubleClickCallback(void (*_doubleClickCallback)(void *), void *_objectPointer) {
+  doubleClickObject = _objectPointer;
+  doubleClickCallback = _doubleClickCallback;
+}
+
+void ShdButton::setLongClickCallback(void (*_longClickCallback)(void *), void *_objectPointer) {
+  longClickObject = _objectPointer;
+  longClickCallback = _longClickCallback;
 }
 
 void ShdButton::resubpub(){
