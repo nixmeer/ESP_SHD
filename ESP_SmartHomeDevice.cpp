@@ -48,32 +48,33 @@ void ESP_SmartHomeDevice::connectWifi(){
   if (WiFi.status() != WL_CONNECTED) {
     WiFi.mode(WIFI_STA);
     WiFiManager wifiManager;
-    wifiManager.autoConnect();
+    wifiManager.autoConnect(name);
     WiFi.hostname(name);
   }
 }
 
 void ESP_SmartHomeDevice::reconnectMqtt(){
 
-  // find mqtt broker using mDNS:
-  if (!MDNS.begin(name)) {
-    Serial.println("Trying to connect to mDNS.");
-    uint32_t mdnsMillis = millis();
-    while (!MDNS.begin(name)) {
-      Serial.print(".");
-      delay(200);
-      if (millis() - mdnsMillis > 5001) {
-        Serial.println("No mDNS found.");
-        break;
-      }
-    }
-  }
+  // start mDNS:
+  // if (!MDNS.begin(name)) {
+  //   Serial.print("MQTT: Trying to begin to mDNS service .");
+  //   uint32_t mdnsMillis = millis();
+  //   while (!MDNS.begin(name)) {
+  //     Serial.print(".");
+  //     delay(200);
+  //     if (millis() - mdnsMillis > 5001) {
+  //       Serial.println(" Could not begin mDNS service.");
+  //       break;
+  //     }
+  //   }
+  // }
 
+  // find mqtt service via mdns:
   uint16_t n = MDNS.queryService("mqtt", "tcp");
   if (n != 1) {
     Serial.print("SHD: ");
     Serial.print(n);
-    Serial.print(" mqtt services found.");
+    Serial.println(" mqtt services found.");
     return;
   }
 
@@ -141,7 +142,7 @@ void ESP_SmartHomeDevice::loop(){//void *pArg){
     }
 
     if (!mqttClient.loop()) {
-      #if DEBUG > 0
+      #if DEBUG > 6
       Serial.println("MQTT: loop() returned false.");
       #endif
       reconnect();
@@ -174,7 +175,7 @@ void ESP_SmartHomeDevice::reconnect(){
       for (size_t i = 0; i < numberOfShds; i++) {
         shds[i]->resubpub();
       }
-      Serial.println("Successfully (re-)subscribed.");
+      Serial.println("MQTT: Successfully (re-)subscribed.");
     }  else {
       Serial.print(" Last connection attempt ");
       Serial.print(currentMillis - lastConnectionAttempt);

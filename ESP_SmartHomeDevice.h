@@ -16,6 +16,7 @@ extern "C" {
 #define MAX_SHDS 8
 #endif
 
+// #define DEBUG 5
 
 class ESP_SmartHomeDevice {
 public:
