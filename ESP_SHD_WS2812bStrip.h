@@ -22,6 +22,9 @@ public:
 
   ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t _ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength);
 
+  static void toggleCallback(void *_objectPointer);
+  void toggle();
+
 private:
   // static functions and variables for the entire strip:
   static void show();

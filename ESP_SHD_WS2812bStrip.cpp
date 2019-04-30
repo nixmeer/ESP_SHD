@@ -93,7 +93,7 @@ void ShdWs2812bStrip::initStrip(uint16_t _numberOfLeds, uint16_t _updateInterval
     FastLED.show();
 
     Serial.println();
-    Serial.print("WS2812b strip initialized. Update interval: ");
+    Serial.print("WS2812b: Strip initialized. Update interval: ");
     Serial.print(millisStripUpdateInterval);
     Serial.println();
   }
@@ -140,11 +140,11 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
     setPoint[i] = 0;
   }
 
-  snprintf (subTopicColor, 50, "%s/Lamp/%d/setColor", name, sectionNumber);
-  snprintf (pubTopicColor, 50, "%s/Lamp/%d/getColor", name, sectionNumber);
-  snprintf (subTopicState, 50, "%s/Lamp/%d/setStatus", name, sectionNumber);
-  snprintf (pubTopicState, 50, "%s/Lamp/%d/getStatus", name, sectionNumber);
-  snprintf (pubTopicBrightness, 50, "%s/Lamp/%d/getBrightness", name, sectionNumber);
+  snprintf(subTopicColor, 50, "%s/Lamp/%d/setColor", name, sectionNumber);
+  snprintf(pubTopicColor, 50, "%s/Lamp/%d/getColor", name, sectionNumber);
+  snprintf(subTopicState, 50, "%s/Lamp/%d/setStatus", name, sectionNumber);
+  snprintf(pubTopicState, 50, "%s/Lamp/%d/getStatus", name, sectionNumber);
+  snprintf(pubTopicBrightness, 50, "%s/Lamp/%d/getBrightness", name, sectionNumber);
 
   direction = _ignitionDirection;
   if (direction == IGNITION_SINGLE_BACKWARD || direction == IGNITION_BOTH_BACKWARD ) {
@@ -383,7 +383,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   Serial.print(",");
   Serial.print(setPoint[1] >> 8);
   Serial.print(",");
-  Serial.print(setPoint[2] >> 8);
+  Serial.println(setPoint[2] >> 8);
   #endif
 
   // avoid turning on with 255,255,255 via color
@@ -560,6 +560,18 @@ void ShdWs2812bStrip::clearPayloadBuffer(){
 void ShdWs2812bStrip::timer5msHandler(){
   if (sectionNumber == numberOfSections) {
     show();
+  }
+}
+
+void ShdWs2812bStrip::toggleCallback(void *_objectPointer) {
+  static_cast<ShdWs2812bStrip*>(_objectPointer)->toggle();
+}
+
+void ShdWs2812bStrip::toggle() {
+  if (setPoint[0] == 0 && setPoint[1] == 0 && setPoint[2] == 0) {
+    setNewColor(255, 255, 255);
+  } else {
+    setNewColor(0, 0, 0);
   }
 }
 
