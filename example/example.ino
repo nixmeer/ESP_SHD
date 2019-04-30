@@ -6,9 +6,10 @@
 #include "ESP_SHD_WS2812bStrip.h"
 #include "ESP_SHD_Button.h"
 #include "ESP_ShdPwmLight.h"
+#include "ESP_SHD_Sprinkler.h"
 
 // activate Arduino OTA:
-// #define OTA
+#define OTA
 
 #define MODUL_NAME "testroom/detailedlication" // replace it with whatever fits your personal needs
 
@@ -22,8 +23,6 @@ void setup() {
 
   ESP_SmartHomeDevice::init(MODUL_NAME);
 
-  delay(1000);
-
   // Adding a PwmLight:
   new ShdPwmLight(12, true, 25, 1000);
   // ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength);
@@ -33,7 +32,7 @@ void setup() {
   // ShdMotionSensor(uint8_t _pin);
 
   // Adding a temoerature sensor:
-  new ShdTemperatureSensor();
+  new ShdTmp36Sensor();
 
   // Adding a WS2812b strip with two sections:
   ShdWs2812bStrip::initStrip(122, 25);
@@ -44,6 +43,10 @@ void setup() {
   // Adding a button:
   new ShdButton(5, true, 20, 500, 1000);
   // ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)
+
+  // Adding a sprinkler:
+  new ShdSprinkler(12, false);
+  // ShdSprinkler(uint8_t _pin, bool _lowActive);
 }
 
 void loop() {
