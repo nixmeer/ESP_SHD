@@ -1,7 +1,8 @@
 # ESP_SmartHomeDevice
-Keep it simple and stupid. Everyone should be able to build his or her smart home device (shd).
+Keep it simple and stupid. Everyone should be able to build his or her smart home device (SHD). 
 ## What this project is supposed to do:
-- [x] create an easy to use platform that uses wifi and mqtt (to talk to [HomeBridge]())
+This code runs on ESP8266 and is optimized to work together with [HomeBridge](https://github.com/nfarina/homebridge) and [mqttthing](https://github.com/arachnetech/homebridge-mqttthing)
+- [x] create an easy to use platform that uses wifi and mqtt to talk to [HomeBridge](https://github.com/nfarina/homebridge)
 - [ ] create a webserver and a settings class that allow setup via GUI
 ## Supported devices
 - [x] WS2512b strips
@@ -9,8 +10,8 @@ Keep it simple and stupid. Everyone should be able to build his or her smart hom
 - [x] TMP36 sensors
 - [x] Motion sensors
 - [x] PWM light
+- [x] Sprinkler
 - [ ] Relay/Switch
-- [ ] Sprinkler
 ## Libraries used
 - [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino)
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary
