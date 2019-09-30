@@ -155,8 +155,12 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
 
   igniting = false;
 
+  subscribe();
+
   #if DEBUG > 0
-  Serial.print("WS2812b: firstLed: ");
+  Serial.print("WS2812b: section no. ");
+  Serial.print(sectionNumber);
+  Serial.print(" registered. firstLed: ");
   Serial.print(firstLed);
   leds[firstLed] = CRGB::Red;
   Serial.print(", ignitionPoint: ");
@@ -167,13 +171,6 @@ ShdWs2812bStrip::ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t
   leds[lastLed] = CRGB::Blue;
   #endif
   FastLED.show();
-
-  #if DEBUG > 0
-  Serial.print("WS2812b: section no. ");
-  Serial.print(sectionNumber);
-  Serial.print(" registered.");
-  Serial.println();
-  #endif
 }
 
 void ShdWs2812bStrip::igniteSingleDir(){
@@ -435,11 +432,11 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
   #endif
 
   // if mqtt client is connected, publish current status:
-  if (mqttClient.connected()) {
+  if (mqttConnected()) {
     if (setPoint[0] == 0 && setPoint[1] == 0 && setPoint[2] == 0) {
-      mqttClient.publish(pubTopicState, "0");
+      mqttPublish(pubTopicState, "0");
     } else {
-      mqttClient.publish(pubTopicState, "1");
+      mqttPublish(pubTopicState, "1");
     }
     #if DEBUG >= 2
     Serial.println("MQTT: State published.");
@@ -448,7 +445,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
     // publish new color:
     clearPayloadBuffer();
     snprintf(payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
-    mqttClient.publish(pubTopicColor, payloadBuffer);
+    mqttPublish(pubTopicColor, payloadBuffer);
     #if DEBUG >= 2
     Serial.print("MQTT: new color published: ");
     Serial.println(payloadBuffer);
@@ -458,7 +455,7 @@ void ShdWs2812bStrip::setNewColor(uint8_t _newRed, uint8_t _newGreen, uint8_t _n
     clearPayloadBuffer();
     uint16_t brightness = (max(max(setPoint[0], setPoint[1]), setPoint[2]) / 652);
     snprintf(payloadBuffer, 50, "%d", brightness);
-    mqttClient.publish(pubTopicBrightness, payloadBuffer);
+    mqttPublish(pubTopicBrightness, payloadBuffer);
     #if DEBUG >= 2
     Serial.println("MQTT: rightness published.");
     #endif
@@ -583,34 +580,38 @@ void ShdWs2812bStrip::callIgnitionFunction(){
   }
 }
 
-void ShdWs2812bStrip::resubpub() {
-  mqttClient.subscribe(subTopicColor, 0);
+void ShdWs2812bStrip::subscribe() {
+  mqttSubscribe(this, subTopicColor);
   #if DEBUG > 0
   Serial.print("WS2812b: Subscribed to ");
   Serial.println(subTopicColor);
   #endif
 
-  mqttClient.subscribe(subTopicState, 0);
+  mqttSubscribe(this, subTopicState);
   #if DEBUG > 0
   Serial.print("WS2812b: Subscribed to ");
   Serial.println(subTopicState);
   #endif
 
+}
+
+void ShdWs2812bStrip::republish() {
+
   // publish current status:
   if (setPoint[0] == 0 && setPoint[1] == 0 && setPoint[2] == 0) {
-    mqttClient.publish(pubTopicState, "0");
+    mqttPublish(pubTopicState, "0");
   } else {
-    mqttClient.publish(pubTopicState, "1");
+    mqttPublish(pubTopicState, "1");
   }
 
   // publish color:
   clearPayloadBuffer();
   snprintf(payloadBuffer, 50, "%d,%d,%d", setPoint[0] >> 8, setPoint[1] >> 8, setPoint[2] >> 8);
-  mqttClient.publish(pubTopicColor, payloadBuffer);
+  mqttPublish(pubTopicColor, payloadBuffer);
 
   // publish brightness:
   clearPayloadBuffer();
   uint16_t brightness = (max(max(setPoint[0], setPoint[1]), setPoint[2]) / 652);
   snprintf(payloadBuffer, 50, "%d", brightness);
-  mqttClient.publish(pubTopicBrightness, payloadBuffer);
+  mqttPublish(pubTopicBrightness, payloadBuffer);
 }

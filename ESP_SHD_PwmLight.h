@@ -1,7 +1,7 @@
 #include "ESP_SmartHomeDevice.h"
 
 #define MAX_PWM_CHANNELS 5
-#define DEBUG 4
+#define DEBUG 0
 
 class ShdPwmLight : public ESP_SmartHomeDevice {
 public:
@@ -9,7 +9,8 @@ public:
 private:
   bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length);
   void timer5msHandler();
-  void resubpub();
+  void subscribe();
+  void republish();
   void setBrightness(uint8_t _percentage);
   bool addIoInfo();
   bool lowActive;

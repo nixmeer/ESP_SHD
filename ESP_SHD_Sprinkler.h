@@ -4,7 +4,7 @@
 #include "ESP_SmartHomeDevice.h"
 #include "PubSubClient.h"
 
-#define DEBUG 5
+#define DEBUG 0
 
 class ShdSprinkler : public ESP_SmartHomeDevice {
 public:
@@ -12,7 +12,8 @@ public:
   void toggle();
 private:
   bool handleMqttRequest(char* _topic, byte* _payload, uint16_t _length);
-  void resubpub();
+  void republish();
+  void subscribe();
   void timer5msHandler();
 
   static uint8_t sprinklerCount;

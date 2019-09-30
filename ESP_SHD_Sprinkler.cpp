@@ -1,5 +1,7 @@
 #include "ESP_SHD_Sprinkler.h"
 
+#define DEBUG 1
+
 uint8_t ShdSprinkler::sprinklerCount = 0;
 
 ShdSprinkler::ShdSprinkler(uint8_t _pin, bool _lowActive)
@@ -12,15 +14,13 @@ ShdSprinkler::ShdSprinkler(uint8_t _pin, bool _lowActive)
     buffer[i] = 0;
   }
 
-  Serial.print("DEBUG: ");
-  Serial.println(DEBUG);
-
-  pinMode(pin, OUTPUT);
-  setOutput(LOW);
   targetStatus = false;
   currentStatus = false;
 
-  durationTicks = 5 * 60 * 200;
+  pinMode(pin, OUTPUT);
+  setOutput(0);
+
+  durationTicks = 5 * 200;
 
   snprintf(subTopicSetActive, 50, "%s/Sprinkler/%d/setActive", name, sprinklerNumber);
   snprintf(pubTopicGetActive, 50, "%s/Sprinkler/%d/getActive", name, sprinklerNumber);
@@ -29,7 +29,8 @@ ShdSprinkler::ShdSprinkler(uint8_t _pin, bool _lowActive)
   snprintf(pubTopicGetDuration, 50, "%s/Sprinkler/%d/getDuration", name, sprinklerNumber);
   snprintf(pubTopicGetRemainingDuration, 60, "%s/Sprinkler/%d/getRemainingDuration", name, sprinklerNumber);
 
-  resubpub();
+  subscribe();
+  republish();
 }
 
 void ShdSprinkler::timer5msHandler() {
@@ -42,7 +43,7 @@ void ShdSprinkler::timer5msHandler() {
     // update remaining duration:
     if (tickCounter - publishTickCounter > 30*200) {
       itoa((durationTicks-tickCounter)/200, buffer, 10);
-      mqttClient.publish(pubTopicGetRemainingDuration, buffer);
+      mqttPublish(pubTopicGetRemainingDuration, buffer);
       publishTickCounter = tickCounter;
       #if DEBUG > 2
       Serial.print("MQTT: Published to ");
@@ -59,67 +60,72 @@ void ShdSprinkler::timer5msHandler() {
   // adapt targetStatus
   if (targetStatus != currentStatus) {
     if (targetStatus == false) {
-      setOutput(LOW);
+      setOutput(0);
       currentStatus = false;
       tickCounter = 0;
-      mqttClient.publish(pubTopicGetInUse, "0");
-      mqttClient.publish(pubTopicGetActive, "0");
+      mqttPublish(pubTopicGetInUse, "0");
+      mqttPublish(pubTopicGetActive, "0");
     } else {
-      setOutput(HIGH);
+      setOutput(1);
       currentStatus = true;
-      mqttClient.publish(pubTopicGetInUse, "1");
+      mqttPublish(pubTopicGetInUse, "1");
+      itoa((durationTicks)/200, buffer, 10);
+      mqttPublish(pubTopicGetRemainingDuration, buffer);
     }
   }
 
 }
 
-void ShdSprinkler::resubpub() {
+void ShdSprinkler::subscribe() {
 
-  mqttClient.subscribe(subTopicSetActive, 0);
-  #if DEBUG >= 1
-  Serial.print("SPRINKLER: No. ");
-  Serial.print(sprinklerNumber);
-  Serial.print(" subscribed to ");
-  Serial.println(subTopicSetActive);
-  #endif
+    mqttSubscribe(this, subTopicSetActive);
+    #if DEBUG >= 1
+    Serial.print("SPRINKLER: No. ");
+    Serial.print(sprinklerNumber);
+    Serial.print(" subscribed to ");
+    Serial.println(subTopicSetActive);
+    #endif
 
-  mqttClient.subscribe(subTopicSetDuration, 0);
-  #if DEBUG >= 1
-  Serial.print("SPRINKLER: No. ");
-  Serial.print(sprinklerNumber);
-  Serial.print(" subscribed to ");
-  Serial.println(subTopicSetDuration);
-  #endif
+    mqttSubscribe(this, subTopicSetDuration);
+    #if DEBUG >= 1
+    Serial.print("SPRINKLER: No. ");
+    Serial.print(sprinklerNumber);
+    Serial.print(" subscribed to ");
+    Serial.println(subTopicSetDuration);
+    #endif
+}
+
+void ShdSprinkler::republish() {
 
   if (targetStatus) {
-    mqttClient.publish(pubTopicGetActive, "1");
+    mqttPublish(pubTopicGetActive, "1");
   } else {
-    mqttClient.publish(pubTopicGetActive, "0");
+    mqttPublish(pubTopicGetActive, "0");
   }
 
   if (currentStatus) {
-    mqttClient.publish(pubTopicGetInUse, "1");
+    mqttPublish(pubTopicGetInUse, "1");
     itoa((durationTicks-tickCounter)/200, buffer, 10);
-    mqttClient.publish(pubTopicGetRemainingDuration, buffer);
+    mqttPublish(pubTopicGetRemainingDuration, buffer);
   } else {
-    mqttClient.publish(pubTopicGetInUse, "0");
+    mqttPublish(pubTopicGetInUse, "0");
   }
 
   itoa(durationTicks/200, buffer, 10);
-  mqttClient.publish(pubTopicGetDuration, buffer);
+  mqttPublish(pubTopicGetDuration, buffer);
 }
 
 bool ShdSprinkler::handleMqttRequest(char* _topic, byte* _payload, uint16_t _length) {
   if (strcmp(_topic, subTopicSetActive) == 0) {
     if (_payload[0] == 0x30) {
       targetStatus = false;
-      mqttClient.publish(pubTopicGetActive, "0");
+      mqttPublish(pubTopicGetActive, "0");
       #if DEBUG > 0
       Serial.println("SPRINKLER: targetStatus: false");
       #endif
     } else if (_payload[0] == 0x31) {
       targetStatus = true;
-      mqttClient.publish(pubTopicGetActive, "1");
+      mqttPublish(pubTopicGetActive, "1");
       #if DEBUG > 0
       Serial.println("SPRINKLER: targetStatus: true");
       #endif
@@ -129,9 +135,9 @@ bool ShdSprinkler::handleMqttRequest(char* _topic, byte* _payload, uint16_t _len
       #endif
     }
   } else if (strcmp(_topic, subTopicSetDuration) == 0) {
-    durationTicks = atoi((char*)_payload) * 200;
-    itoa(durationTicks/200, buffer, 10);
-    mqttClient.publish(pubTopicGetDuration, buffer);
+    durationTicks = atoi((char*)_payload) * 200 / 60;
+    itoa(durationTicks*60/200, buffer, 10);
+    mqttPublish(pubTopicGetDuration, buffer);
     #if DEBUG > 0
     Serial.print("SPRINKLER: durationTicks: ");
     Serial.println(durationTicks);
@@ -147,18 +153,26 @@ void ShdSprinkler::setOutput(bool _target) {
     digitalWrite(pin, !_target);
     #if DEBUG > 0
     if (_target) {
-      Serial.println("SPRINKLER: turned on");
+      Serial.print("SPRINKLER: No. ");
+      Serial.print(sprinklerNumber);
+      Serial.println(" turned on");
     } else {
-      Serial.println("SPRINKLER: turned off");
+      Serial.print("SPRINKLER: No. ");
+      Serial.print(sprinklerNumber);
+      Serial.println(" turned off");
     }
     #endif
   } else {
     digitalWrite(pin, _target);
     #if DEBUG > 0
     if (_target) {
-      Serial.println("SPRINKLER: turned on");
+      Serial.print("SPRINKLER: No. ");
+      Serial.print(sprinklerNumber);
+      Serial.println(" turned on");
     } else {
-      Serial.println("SPRINKLER: turned off");
+      Serial.print("SPRINKLER: No. ");
+      Serial.print(sprinklerNumber);
+      Serial.println(" turned off");
     }
     #endif
   }

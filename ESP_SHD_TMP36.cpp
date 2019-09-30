@@ -38,12 +38,12 @@ void ShdTmp36Sensor::publishTemperature() {
 
   dtostrf(temperature, 3, 1, message);
 
-  if (!mqttClient.connected()) {
+  if (!mqttConnected()) {
     timerCounter = 5999; // set close to 6000, so next time timer5ms() is called, it's trying again
     return;
   }
 
-  if (mqttClient.publish(pubTopic, message)) {
+  if (mqttPublish(pubTopic, message)) {
     #if DEBUG > 1
     Serial.print("Temperature published to ");
     Serial.print(pubTopic);
@@ -55,6 +55,6 @@ void ShdTmp36Sensor::publishTemperature() {
   }
 }
 
-void ShdTmp36Sensor::resubpub() {
+void ShdTmp36Sensor::republish() {
   publishTemperature();
 }

@@ -26,7 +26,7 @@ bool ShdMotionSensor::handleMqttRequest(char* _topic, unsigned char* _payload, u
 void ShdMotionSensor::timer5msHandler(){
 
   // test, if mqtt client is connected
-  if (!mqttClient.connected()) {
+  if (!mqttConnected()) {
     return;
   }
 
@@ -35,7 +35,7 @@ void ShdMotionSensor::timer5msHandler(){
                                                                   #if DEBUG > 2
                                                                   Serial.print("Motion detected. ");
                                                                   #endif
-    if (mqttClient.publish(pubTopic, "true")) {
+    if (mqttPublish(pubTopic, "true")) {
                                                                   #if DEBUG > 2
                                                                   Serial.print("Published via MQTT. ");
                                                                   #endif
@@ -51,7 +51,7 @@ void ShdMotionSensor::timer5msHandler(){
                                                                   #if DEBUG > 2
                                                                   Serial.print("No motion detected. ");
                                                                   #endif
-    if (mqttClient.publish(pubTopic, "false")) {
+    if (mqttPublish(pubTopic, "false")) {
                                                                   #if DEBUG > 2
                                                                   Serial.print("Published via MQTT. ");
                                                                   #endif
@@ -73,10 +73,10 @@ void ShdMotionSensor::pinChange(){
 }
 
 
-void ShdMotionSensor::resubpub() {
+void ShdMotionSensor::republish() {
   if (motionSensorStatus) {
-    mqttClient.publish(pubTopic, "true");
+    mqttPublish(pubTopic, "true");
   } else {
-    mqttClient.publish(pubTopic, "false");
+    mqttPublish(pubTopic, "false");
   }
 }

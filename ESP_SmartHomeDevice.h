@@ -16,7 +16,7 @@ extern "C" {
 #define MAX_SHDS 8
 #endif
 
-// #define DEBUG 5
+#define DEBUG 0
 
 class ESP_SmartHomeDevice {
 public:
@@ -25,26 +25,41 @@ public:
   static void init(char* _mqttServerAddress, uint16_t _port, char* _name);
   static void mqttCallback(char* _topic, unsigned char* _payload, unsigned int _length);
   static void loop();//void *pArg);
+
 protected:
   virtual bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length) = 0;
   virtual void timer5msHandler() = 0;
-  virtual void resubpub() = 0;
-  static void reconnect();
-  static void connectWifi();
-  static void reconnectMqtt();
-  static void reconnectMqtt(IPAddress _mqttServerAddress, uint16_t _port);
-  static void reconnectMqtt(const char* _mqttServerAddress, uint16_t _port);
+  virtual void republish() = 0;
+  static bool mqttPublish(char* _topic, const char* _payload);
+  static bool mqttConnected();
+  static void mqttSubscribe(ESP_SmartHomeDevice* _subscriber, char* _topic);
   static ESP_SmartHomeDevice* shds[MAX_SHDS];
-  static uint8_t numberOfShds;
-  static PubSubClient mqttClient;
-  static WiFiClient wifiClient;
   static char* name;
-  static os_timer_t loopTimer;
+
+private:
+  static PubSubClient mqttClient;
+  static uint8_t numberOfShds;
+  static WiFiClient wifiClient;
   static uint32_t lastConnectionAttempt;
   static uint32_t last5msTimer;
+  static uint32_t last1msTimer;
   static char * mqttServerAddress;
   static uint16_t port;
   static bool useMdns;
+  static void* lastSubscription;
+  static uint32_t lastMqttLoop;
+  static void reconnect();
+  static bool connectWifi();
+  static void reconnectMqtt();
+  static void reconnectMqtt(IPAddress _mqttServerAddress, uint16_t _port);
+  static void reconnectMqtt(const char* _mqttServerAddress, uint16_t _port);
+  static bool resubscribe();
+};
+
+struct mqttSubscription {
+  mqttSubscription* next;
+  ESP_SmartHomeDevice* subscriber;
+  char* topic;
 };
 
 #endif

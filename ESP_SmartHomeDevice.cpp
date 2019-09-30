@@ -1,4 +1,5 @@
 #include "ESP_SmartHomeDevice.h"
+#define DEBUG 2
 
 ESP_SmartHomeDevice* ESP_SmartHomeDevice::shds[MAX_SHDS];
 PubSubClient ESP_SmartHomeDevice::mqttClient;
@@ -6,19 +7,21 @@ WiFiClient ESP_SmartHomeDevice::wifiClient;
 uint8_t ESP_SmartHomeDevice::numberOfShds = 0;
 uint32_t ESP_SmartHomeDevice::lastConnectionAttempt = 0;
 uint32_t ESP_SmartHomeDevice::last5msTimer = 0;
+uint32_t ESP_SmartHomeDevice::last1msTimer = 0;
+uint32_t ESP_SmartHomeDevice::lastMqttLoop = 0;
 char* ESP_SmartHomeDevice::name;
-os_timer_t ESP_SmartHomeDevice::loopTimer;
 bool ESP_SmartHomeDevice::useMdns = false;
 char* ESP_SmartHomeDevice::mqttServerAddress;
 uint16_t ESP_SmartHomeDevice::port;
-
+void* ESP_SmartHomeDevice::lastSubscription = NULL;
 
 ESP_SmartHomeDevice::ESP_SmartHomeDevice(){
   if (numberOfShds < MAX_SHDS-1) {
     shds[numberOfShds] = this;
     numberOfShds++;
+  } else {
+    Serial.println("SHD: Too many devices!!");
   }
-  Serial.println("SHD: New device registered. ");
 }
 
 void ESP_SmartHomeDevice::init(char* _mqttServerAddress, uint16_t _port, char* _name){
@@ -29,7 +32,6 @@ void ESP_SmartHomeDevice::init(char* _mqttServerAddress, uint16_t _port, char* _
   mqttServerAddress = _mqttServerAddress;
   port = _port;
 
-  connectWifi();
   Serial.println("------------------------------------------");
   Serial.println();
 }
@@ -39,17 +41,37 @@ void ESP_SmartHomeDevice::init(char *_name){
   name = _name;
   useMdns = true;
 
-  connectWifi();
   Serial.println("------------------------------------------");
   Serial.println();
 }
 
-void ESP_SmartHomeDevice::connectWifi(){
+bool ESP_SmartHomeDevice::connectWifi(){
+  #if DEBUG > 1
+  Serial.print("SHD: connectWifi() was called. free cont stack: ");
+  Serial.print(ESP.getFreeContStack());
+  Serial.print(", free heap stack: ");
+  Serial.print(ESP.getFreeHeap());
+  Serial.println();
+  #endif
   if (WiFi.status() != WL_CONNECTED) {
     WiFi.mode(WIFI_STA);
     WiFiManager wifiManager;
+    wifiManager.setConfigPortalTimeout(90);
     wifiManager.autoConnect(name);
-    WiFi.hostname(name);
+    if (WiFi.status() == WL_CONNECTED) {
+      WiFi.hostname(name);
+      Serial.println("SHD: WiFiManager could establish a connection.");
+      return true;
+    } else {
+      Serial.println("WiFiManager could not establish a connection. Resetting...");
+      ESP.reset();
+      return false;
+    }
+  } else {
+    #if DEBUG > 1
+    Serial.println("SHD: WiFi connection was ok.");
+     #endif
+    return true;
   }
 }
 
@@ -71,10 +93,11 @@ void ESP_SmartHomeDevice::reconnectMqtt(){
 
   // find mqtt service via mdns:
   uint16_t n = MDNS.queryService("mqtt", "tcp");
+  Serial.print("SHD: ");
+  Serial.print(n);
+  Serial.println(" mqtt services found.");
+
   if (n != 1) {
-    Serial.print("SHD: ");
-    Serial.print(n);
-    Serial.println(" mqtt services found.");
     return;
   }
 
@@ -121,9 +144,13 @@ void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, un
   Serial.print(_topic);
   Serial.println(".");
   #endif
-  for (uint8_t i = 0; i < numberOfShds; i++) {
-    if(shds[i]->handleMqttRequest(_topic, _payload, _length)){
-       break;
+  mqttSubscription* subscribtion = (mqttSubscription*)lastSubscription;
+  while (subscribtion != NULL) {
+    if (strcmp(_topic, subscribtion->topic) == 0) {
+      subscribtion->subscriber->handleMqttRequest(_topic, _payload, _length);
+      break;
+    } else {
+      subscribtion = subscribtion->next;
     }
   }
   // clear payload:
@@ -136,17 +163,31 @@ void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, un
 
 void ESP_SmartHomeDevice::loop(){//void *pArg){
   uint32_t currentMicros = micros();
-  if(currentMicros - last5msTimer > 5000){
-    while (currentMicros - last5msTimer > 5000) {
-      last5msTimer += 5000;
+
+  if (currentMicros - last1msTimer > 1000) {
+    while (currentMicros - last1msTimer > 1000) {
+      last1msTimer += 1000;
     }
 
     if (!mqttClient.loop()) {
-      #if DEBUG > 6
-      Serial.println("MQTT: loop() returned false.");
+      Serial.print("MQTT: state = ");
+      Serial.println(mqttClient.state());
+      #if DEBUG > 1
+      Serial.print("MQTT: loop() returned false. It has not been called since ");
+      Serial.print(currentMicros - lastMqttLoop);
+      Serial.println(" us.");
       #endif
       reconnect();
       return;
+    } else {
+      lastMqttLoop = currentMicros;
+    }
+
+  }
+
+  if(currentMicros - last5msTimer > 5000){
+    while (currentMicros - last5msTimer > 5000) {
+      last5msTimer += 5000;
     }
 
     for (size_t i = 0; i < numberOfShds; i++) {
@@ -161,25 +202,28 @@ void ESP_SmartHomeDevice::reconnect(){
   if (currentMillis - lastConnectionAttempt > TRY_RECONNECT_AFTER_MILLISECONDS) {
 
     // check wifi connection:
-    connectWifi();
+    if (connectWifi()) {
 
-    // reconnect mqtt client:
-    if (useMdns) {
-      reconnectMqtt();
-    } else {
-      reconnectMqtt(mqttServerAddress, port);
-    }
+          // reconnect mqtt client:
+          if (useMdns) {
+            reconnectMqtt();
+          } else {
+            reconnectMqtt(mqttServerAddress, port);
+          }
 
-    // if reconnecting has been successfull, resubscribe to all topics and publish current states:
-    if (mqttClient.connected()) {
-      for (size_t i = 0; i < numberOfShds; i++) {
-        shds[i]->resubpub();
-      }
-      Serial.println("MQTT: Successfully (re-)subscribed.");
-    }  else {
-      Serial.print(" Last connection attempt ");
-      Serial.print(currentMillis - lastConnectionAttempt);
-      Serial.println(" milliseconds ago.");
+          // if reconnecting has been successfull, resubscribe to all topics and publish current states:
+          if (mqttClient.connected()) {
+            if (resubscribe()) {
+              Serial.println("MQTT: Successfully (re-)subscribed.");
+            }
+            for (size_t i = 0; i < numberOfShds; i++) {
+              shds[i]->republish();
+            }
+          }  else {
+            Serial.print("SHD: Last connection attempt ");
+            Serial.print(currentMillis - lastConnectionAttempt);
+            Serial.println(" milliseconds ago.");
+          }
     }
 
     // update lastConnectionAttempt
@@ -187,4 +231,41 @@ void ESP_SmartHomeDevice::reconnect(){
       lastConnectionAttempt += TRY_RECONNECT_AFTER_MILLISECONDS;
     }
   }
+}
+
+bool ESP_SmartHomeDevice::mqttPublish(char *_topic, const char *_payload) {
+  if (mqttClient.connected()) {
+    mqttClient.publish(_topic, _payload);
+  }
+}
+
+bool ESP_SmartHomeDevice::mqttConnected() {
+  return mqttClient.connected();
+}
+
+void ESP_SmartHomeDevice::mqttSubscribe(ESP_SmartHomeDevice *_subscriber, char *_topic) {
+  mqttSubscription* tmp = new mqttSubscription;
+  tmp->next = (mqttSubscription*)lastSubscription;
+  tmp->subscriber = _subscriber;
+  tmp->topic = _topic;
+  // mqttClient.subscribe(tmp->topic, 0);
+  // Serial.print("MQTT: subscribed to");
+  // Serial.println(tmp->topic);
+
+  lastSubscription = (void*)tmp;
+}
+
+bool ESP_SmartHomeDevice::resubscribe() {
+  if (!mqttClient.connected()) {
+    return false;
+  }
+
+  mqttSubscription* subscribtion = (mqttSubscription*)lastSubscription;
+  while(subscribtion != NULL) {
+    mqttClient.subscribe(subscribtion->topic, 0);
+    Serial.print("MQTT: subscribed to ");
+    Serial.println(subscribtion->topic);
+    subscribtion = subscribtion->next;
+  }
+  return true;
 }

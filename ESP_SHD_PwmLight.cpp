@@ -39,7 +39,8 @@ ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInt
   snprintf (subTopicBrightness, 60, "%s/PwmLight/%d/setBrightness", name, numberOfPwmPins);
   snprintf (subTopicState, 60, "%s/PwmLight/%d/setStatus", name, numberOfPwmPins);
 
-  resubpub();
+  subscribe();
+  republish();
 
   pwmDutyInit[pwmNumber] = 0;
   pinMode(pin, OUTPUT);
@@ -167,9 +168,9 @@ void ShdPwmLight::setBrightness(uint8_t _percentage){
   if (_percentage > 0) {
     // save every percentage greater 0 for restoring after turning the light off and on
     lastBrightnessGreaterZero = _percentage;
-    mqttClient.publish(pubTopicState, "1");
+    mqttPublish(pubTopicState, "1");
   } else {
-    mqttClient.publish(pubTopicState, "0");
+    mqttPublish(pubTopicState, "0");
   }
 
   // save new set point
@@ -178,34 +179,35 @@ void ShdPwmLight::setBrightness(uint8_t _percentage){
   // publish new brightness
   char payload[5];
   snprintf (payload, 5, "%d", setPoint);
-  mqttClient.publish(pubTopicBrightness, payload);
+  mqttPublish(pubTopicBrightness, payload);
 
   // start fading process:
   flankOver = false;
 }
 
-void ShdPwmLight::resubpub(){
-  mqttClient.subscribe(subTopicBrightness, 0);
+void ShdPwmLight::subscribe(){
+  mqttSubscribe(this, subTopicBrightness);
   #if DEBUG > 0
   Serial.print("SHD: PwmLight subscribed to ");
   Serial.println(subTopicBrightness);
   #endif
 
-  mqttClient.subscribe(subTopicState, 0);
+  mqttSubscribe(this, subTopicState);
   #if DEBUG > 0
   Serial.print("SHD: PwmLight subscribed to ");
   Serial.println(subTopicState);
   #endif
+}
 
+void ShdPwmLight::republish(){
   if (currentBrightness != 0) {
-    mqttClient.publish(pubTopicState, "1");
+    mqttPublish(pubTopicState, "1");
   } else {
-    mqttClient.publish(pubTopicState, "0");
+    mqttPublish(pubTopicState, "0");
   }
   char payload[5];
   snprintf (payload, 5, "%d", setPoint);
-  mqttClient.publish(pubTopicBrightness, payload);
-
+  mqttPublish(pubTopicBrightness, payload);
 }
 
 bool ShdPwmLight::addIoInfo(){
