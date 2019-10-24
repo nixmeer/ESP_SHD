@@ -20,13 +20,13 @@ Additional to this library, these libraries need to be installed to your Arduino
 - [FastLED](https://github.com/FastLED/FastLED) by FastLED
 - [WiFiManager](https://github.com/tzapu/WiFiManager) by tzapu
 ## Usage in Arduino
-#### Initializing your Smarthome Device
+### Initializing your Smarthome Device
 Call `ESP_SmartHomeDevice::init(...)` to setup and initialize wifi and mqtt in the `setup()` function of your *.ino* file. If there is no known wifi network, a wifi access point will be created which let's you connect the ESP to a wifi network. If you use **one** local mqtt broker and it is discoverable via mDNS, call `ESP_SmartHomeDevice::init(char* _name)`. The shd then automatically connects to it. If it discovers 0 or more than one, it resets itself.
 ```
 ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, char* _name);
 ESP_SmartHomeDevice::init(char* _name);
 ```
-#### Adding devices to your Code
+### Adding devices to your Code
 Now just create new devices using `new Shd...()` in the `setup()` function. MQTT topics do always begin with the `_name` parameter initialized in `ESP_SmartHomeDevice::init(...)`.
 #### Motion Sensor
 To add a motion sensor, just call `new ShdMotionSensor(uint8_t _pin)`. It publishes it's status (`true` or `false` as char) to `_name/Motion`.
