@@ -11,6 +11,7 @@ This project runs on ESP8266. The code is optimized to work together with [HomeB
 - [x] Motion sensors
 - [x] PWM light
 - [x] Sprinkler
+- [ ] Window blind
 - [ ] Relay/Switch
 ## Libraries used
 Additional to this library, these libraries need to be installed to your Arduino environment. In the IDE, you can add them through the library manager.
@@ -19,19 +20,19 @@ Additional to this library, these libraries need to be installed to your Arduino
 - [FastLED](https://github.com/FastLED/FastLED) by FastLED
 - [WiFiManager](https://github.com/tzapu/WiFiManager) by tzapu
 ## Usage in Arduino
-### Initializing your Smarthome Device
+#### Initializing your Smarthome Device
 Call `ESP_SmartHomeDevice::init(...)` to setup and initialize wifi and mqtt in the `setup()` function of your *.ino* file. If there is no known wifi network, a wifi access point will be created which let's you connect the ESP to a wifi network. If you use **one** local mqtt broker and it is discoverable via mDNS, call `ESP_SmartHomeDevice::init(char* _name)`. The shd then automatically connects to it. If it discovers 0 or more than one, it resets itself.
 ```
 ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, char* _name);
 ESP_SmartHomeDevice::init(char* _name);
 ```
-### Adding devices to your Code
+#### Adding devices to your Code
 Now just create new devices using `new Shd...()` in the `setup()` function. MQTT topics do always begin with the `_name` parameter initialized in `ESP_SmartHomeDevice::init(...)`.
-### Motion Sensor
+#### Motion Sensor
 To add a motion sensor, just call `new ShdMotionSensor(uint8_t _pin)`. It publishes it's status (`true` or `false` as char) to `_name/Motion`.
-### Temperature Sensor
+#### Temperature Sensor
 To add a temperature sensor, just call `new ShdTmp36Sensor()`. No pin is needed, since there is only one ADC available in the ESP8266. It publishes the temperature to `_name/Temperature`.
-### WS2812b strip
+#### WS2812b strip
 Only stips at pin 4 are Supported.
 Call ` ShdWs2812bStrip::initStrip(uint16_t _numberOfLeds, uint16_t _updateInterval)`. First argument sets the number of LEDs of the entire strip, second argument sets the update interval for the strip in milliseconds. 41 ms (24 fps) looked jerky, 25 ms (40 fps) looks much better.
 Call `new ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t _ignitionPoint, ignitionDirection _ignitionDirection, uint8_t _hopsPerShow, uint8_t _flankLength)` to create a light section, multiple can be created for one strip and be used simultaneously. These sections can overlap (not yet tested).
@@ -43,7 +44,7 @@ Call `new ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t _ignit
 - `_flankLength` sets the number of LEDs that are needed to transfer from one color to another
 ShdWs2812bStrip subscribes to `_name/Lamp/_sectionNumber/setColor` and `_name/Lamp/_sectionNumber/setStatus`. `_sectionNumber`is increased for every new section starting at 1.
 ShdWs2812bStrip publishes its status (0 and 1) to `_name/Lamp/_sectionNumber/getStatus`, its color to `_name/Lamp/_sectionNumber/getColor` and publishes its brightness to `_name/Lamp/_sectionNumber/getBrightness`.
-### Button
+#### Button
 To add a new button, call `new ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)`. It publishes to `_name/Button/_buttonNumber`. `_buttonNumber` is increased for every new button starting at 1.
 ## Make your devices work
 In order to have all devices up and running, call `ESP_SmartHomeDevice::loop();`. This keeps care of all devices, the WiFi- and the MQTT-connection.
