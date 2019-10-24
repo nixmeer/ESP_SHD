@@ -20,6 +20,7 @@ Additional to this library, these libraries need to be installed to your Arduino
 - [FastLED](https://github.com/FastLED/FastLED) by FastLED
 - [WiFiManager](https://github.com/tzapu/WiFiManager) by tzapu
 ## Usage in Arduino
+The following section describes what is shown in the [example.ino](https://github.com/nixmeer/ESP_SmartHomeDevice/blob/master/example/example.ino)
 ### Initializing your Smarthome Device
 Call `ESP_SmartHomeDevice::init(...)` to setup and initialize wifi and mqtt in the `setup()` function of your *.ino* file. If there is no known wifi network, a wifi access point will be created which let's you connect the ESP to a wifi network. If you use **one** local mqtt broker and it is discoverable via mDNS, call `ESP_SmartHomeDevice::init(char* _name)`. The shd then automatically connects to it. If it discovers 0 or more than one, it resets itself.
 ```
