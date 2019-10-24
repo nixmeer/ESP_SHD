@@ -1,9 +1,9 @@
 # ESP_SmartHomeDevice
-Keep it simple and stupid. Everyone should be able to build his or her smart home device (SHD). 
-## What this project is supposed to do:
-This code runs on ESP8266 and is optimized to work together with [HomeBridge](https://github.com/nfarina/homebridge) and [mqttthing](https://github.com/arachnetech/homebridge-mqttthing)
+All smarthome devices are too expensive? Yes! But: *Here's to the crazy ones.* Let's build them ourselves and integrate them to Apple's HomeKit and Alexa!
+## What is this project about?
+This project runs on ESP8266. The code is optimized to work together with [HomeBridge](https://github.com/nfarina/homebridge) and [mqttthing](https://github.com/arachnetech/homebridge-mqttthing). 
 - [x] create an easy to use platform that uses wifi and mqtt to talk to [HomeBridge](https://github.com/nfarina/homebridge)
-- [ ] create a webserver and a settings class that allow setup via GUI
+- [ ] create a webserver and a settings class to allow setup via GUI
 ## Supported devices
 - [x] WS2512b strips
 - [x] Stateless switches
@@ -13,24 +13,20 @@ This code runs on ESP8266 and is optimized to work together with [HomeBridge](ht
 - [x] Sprinkler
 - [ ] Relay/Switch
 ## Libraries used
-- [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino)
+Additional to this library, these libraries need to be installed to your Arduino environment. In the IDE, you can add them through the library manager.
+- [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino) by espressif
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary
 - [FastLED](https://github.com/FastLED/FastLED) by FastLED
 - [WiFiManager](https://github.com/tzapu/WiFiManager) by tzapu
-## Code Structure
-There is a separate class for each device. Every device is implemented as a child class of ESP_SmartHomeDevice. After initializing ESP_SmartHomeDevice, objects of these classes can be created. All of these objects use a single mqtt client which is provided by ESP_SmartHomeDevice. Each child class of ESP_SmartHomeDevice has to implement the following member functions:
-- `bool handleMqttRequest(char * _topic, unsigned char * _payload, uint16_t _length)` is being called after a request has been pushed to the mqtt client
-- `void resubscribe()` is being called after the connection to the mqtt broker was lost
-- `void timer5msHandler()` is being called every 5 ms
-## Basic usage in Arduino
+## Usage in Arduino
+### Initializing your Smarthome Device
+Call `ESP_SmartHomeDevice::init(...)` to setup and initialize wifi and mqtt in the `setup()` function of your *.ino* file. If there is no known wifi network, a wifi access point will be created which let's you connect the ESP to a wifi network. If you use **one** local mqtt broker and it is discoverable via mDNS, call `ESP_SmartHomeDevice::init(char* _name)`. The shd then automatically connects to it. If it discovers 0 or more than one, it resets itself.
 ```
 ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, char* _name);
-ESP_SmartHomeDevice::init(char* _name)
+ESP_SmartHomeDevice::init(char* _name);
 ```
-Call `ESP_SmartHomeDevice::init(...)` to setup and initialize wifi and mqtt in the `setup()` function of your .ino file. If there is no known wifi network, a wifi access point will be created which let's you connect the ESP to a wifi network. If you use **one** local mqtt broker and it is discoverable via mDNS, call `ESP_SmartHomeDevice::init(char* _name)`. The shd then automatically connects to it. If it discovers 0 or more than one, it resets itself.
-Now just create new devices using `new Shd...()`.
-MQTT topics do always begin with the `_name` parameter initialized here.
-## Creating devices
+### Adding devices to your Code
+Now just create new devices using `new Shd...()` in the `setup()` function. MQTT topics do always begin with the `_name` parameter initialized in `ESP_SmartHomeDevice::init(...)`.
 ### Motion Sensor
 To add a motion sensor, just call `new ShdMotionSensor(uint8_t _pin)`. It publishes it's status (`true` or `false` as char) to `_name/Motion`.
 ### Temperature Sensor
@@ -49,6 +45,13 @@ ShdWs2812bStrip subscribes to `_name/Lamp/_sectionNumber/setColor` and `_name/La
 ShdWs2812bStrip publishes its status (0 and 1) to `_name/Lamp/_sectionNumber/getStatus`, its color to `_name/Lamp/_sectionNumber/getColor` and publishes its brightness to `_name/Lamp/_sectionNumber/getBrightness`.
 ### Button
 To add a new button, call `new ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)`. It publishes to `_name/Button/_buttonNumber`. `_buttonNumber` is increased for every new button starting at 1.
+## Make your devices work
+In order to have all devices up and running, call `ESP_SmartHomeDevice::loop();`. This keeps care of all devices, the WiFi- and the MQTT-connection.
+## Adding support for more devices
+There is a separate class for each device. Every device is implemented as a child class of ESP_SmartHomeDevice. After initializing ESP_SmartHomeDevice, objects of these classes can be created. All of these objects use a single mqtt client which is provided by ESP_SmartHomeDevice. Each child class of ESP_SmartHomeDevice has to implement the following member functions:
+- `bool handleMqttRequest(char * _topic, unsigned char * _payload, uint16_t _length)` is being called after a request has been pushed to the mqtt client
+- `void resubscribe()` is being called after the connection to the mqtt broker was lost
+- `void timer5msHandler()` is being called every 5 ms
 # Hardware
 This repository contains the eagle and gerber files of the first generation SHD hardware. The PCBs can be ordered from jlcpcb.com or any other pcb manufacturer. The following parts are necessary for full assembly:
 - ESP12f module
