@@ -76,4 +76,4 @@ You can use any mqtt broker with this code. In order to have all devices run sta
   </service>
 </service-group>
 ```
-Then reboot. SHDs should find the broker now automatically.
+Reboot the pi. SHDs should find the broker now automatically.
