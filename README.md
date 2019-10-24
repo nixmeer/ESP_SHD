@@ -4,12 +4,13 @@ All smarthome devices are too expensive? Yes! But: *Here's to the crazy ones.* L
 This project runs on ESP8266. The code is optimized to work together with [HomeBridge](https://github.com/nfarina/homebridge) and [mqttthing](https://github.com/arachnetech/homebridge-mqttthing). 
 - [x] create an easy to use platform that uses wifi and mqtt to talk to [HomeBridge](https://github.com/nfarina/homebridge)
 - [ ] create a webserver and a settings class to allow setup via GUI
+It might run on your personal ESP8266 board but this project also provides a pcb layout (EAGLE). Just check out the hardware folder.
 ## Supported devices
 - [x] WS2512b strips
 - [x] Stateless switches
 - [x] TMP36 sensors
 - [x] Motion sensors
-- [x] PWM light
+- [x] Dimmable light
 - [x] Sprinkler
 - [ ] Window blind
 - [ ] Relay/Switch
