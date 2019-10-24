@@ -9,8 +9,8 @@
 #include "ESP_SHD_PwmLight.h"
 #include "ESP_SHD_Sprinkler.h"
 
-// activate Arduino OTA:
-#define OTA
+// uncomment to activate Arduino OTA:
+// #define OTA
 
 #define MODUL_NAME "testroom/detailedlication" // replace it with whatever fits your personal needs
 
@@ -22,6 +22,7 @@ void setup() {
   setupArduinoOta();
   #endif
 
+  // initialize this device with MODUL_NAME
   ESP_SmartHomeDevice::init(MODUL_NAME);
 
   // Adding a PwmLight:
@@ -60,8 +61,8 @@ void loop() {
   ArduinoOTA.handle();
   #endif
 
-  // remove, if MQTT reconnect works with timer
-  ESP_SmartHomeDevice::loop();
+  // necessary to keep the SHD up and running:
+  ESP_SmartHomeDevice::loop(); // TODO: remove, if MQTT reconnect works with timer
 }
 
 void setupArduinoOta(){
