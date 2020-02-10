@@ -1,7 +1,6 @@
 #include "ESP_SmartHomeDevice.h"
 
-#define MAX_PWM_CHANNELS 5
-#define DEBUG 0
+#define DEBUG 2
 
 class ShdPwmLight : public ESP_SmartHomeDevice {
 public:
@@ -15,19 +14,14 @@ private:
   bool addIoInfo();
   bool lowActive;
   uint8_t pin, pwmNumber;
-  uint8_t setPoint;
-  uint8_t delta;
-  int16_t currentBrightness;
+  uint16_t setPoint;
+  int16_t delta;
+  uint16_t currentBrightness;
   uint8_t lastBrightnessGreaterZero;
   uint32_t millisLastUpdate;
   uint32_t millisUpdateInterval;
   bool flankOver;
   char pubTopicBrightness[70], pubTopicState[70], subTopicState[70], subTopicBrightness[70];
 
-  static bool firstRun;
-  static uint8_t numberOfPwmPins;
-  static uint32_t pwmDutyInit[MAX_PWM_CHANNELS];
-  static uint32_t ioInfo[MAX_PWM_CHANNELS][3];
-
-  static uint16_t gammaCorrection[101];
+  static uint16_t gammaCorrection[1001];
 };

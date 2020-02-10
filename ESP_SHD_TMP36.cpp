@@ -29,7 +29,7 @@ void ShdTmp36Sensor::timer5msHandler(){
 
 void ShdTmp36Sensor::publishTemperature() {
 
-  int adcValue = analogRead(A0);
+  int adcValue = adcMeasurement();
   float temperature = 0.07326 * adcValue - 39.9767;
 
   for (size_t i = 0; i < 10; i++) {
@@ -53,6 +53,15 @@ void ShdTmp36Sensor::publishTemperature() {
     Serial.println(message);
     #endif
   }
+}
+
+int ShdTmp36Sensor::adcMeasurement() {
+  double adcValue = 0;
+  for (uint8_t i = 0; i < OVERSAMPLING; i++) {
+    adcValue += analogRead(A0);
+  }
+  adcValue /= OVERSAMPLING;
+  return (int)adcValue;
 }
 
 void ShdTmp36Sensor::republish() {
