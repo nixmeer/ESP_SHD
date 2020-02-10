@@ -55,7 +55,7 @@ void ShdButton::timer5msHandler(){
     uint32_t currentMillis = millis();
     if (clickCounter == 1 && currentlyClicked == false && currentMillis - firstClickTime > millisMultiClick) {
       if (singleClickCallback == NULL) {
-        if (mqttClient.publish(pubTopic, "1")) {
+        if (mqttPublish(pubTopic, "1")) {
           #if DEBUG > 1
           Serial.print("Button event has been published to ");
           Serial.print(pubTopic);
@@ -75,7 +75,7 @@ void ShdButton::timer5msHandler(){
       if (doubleClickCallback) {
         /* code */
       }
-      if (mqttClient.publish(pubTopic, "2")) {
+      if (mqttPublish(pubTopic, "2")) {
         #if DEBUG > 1
         Serial.print("Button event has been published to ");
         Serial.print(pubTopic);
@@ -87,7 +87,7 @@ void ShdButton::timer5msHandler(){
       }
       clickCounter = 0;
     } else if (clickCounter == 1 && currentlyClicked == true && currentMillis - firstClickTime > millisLongClick) {
-      if (mqttClient.publish(pubTopic, "L")) {
+      if (mqttPublish(pubTopic, "L")) {
         #if DEBUG > 1
         Serial.print("Button event has been published to ");
         Serial.print(pubTopic);
@@ -124,6 +124,6 @@ void ShdButton::setLongClickCallback(void (*_longClickCallback)(void *), void *_
   longClickCallback = _longClickCallback;
 }
 
-void ShdButton::resubpub(){
+void ShdButton::republish(){
   return;
 }

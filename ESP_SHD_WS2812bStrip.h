@@ -11,7 +11,7 @@
 #define MAX_NUM_OF_SECTIONS 5
 
 #define DATA_PIN 4
-#define DEBUG 1
+#define DEBUG 0
 
 enum ignitionDirection { IGNITION_SINGLE_FORWARD, IGNITION_SINGLE_BACKWARD, IGNITION_BOTH_FORWARD, IGNITION_BOTH_BACKWARD };
 
@@ -67,7 +67,8 @@ private:
   bool fillLedWithNewColor(uint16_t _ledIndex);
   bool fillLedWithNewColor(uint16_t _ledIndex1, uint16_t _ledIndex2);
   void clearPayloadBuffer();
-  void resubpub();
+  void republish();
+  void subscribe();
   void changeStatus();
 };
 

@@ -15,11 +15,10 @@ private:
   bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length);
   char pubTopic[50];
   char message[10];
-  // os_timer_t timer;
   void publishTemperature();
   void timer5msHandler();
   uint16_t timerCounter;
-  void resubpub();
+  void republish();
   OneWire oneWire;
   DallasTemperature DS18B20;
 };

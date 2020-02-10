@@ -29,7 +29,7 @@ void ShdTmp36Sensor::timer5msHandler(){
 
 void ShdTmp36Sensor::publishTemperature() {
 
-  int adcValue = analogRead(A0);
+  int adcValue = adcMeasurement();
   float temperature = 0.07326 * adcValue - 39.9767;
 
   for (size_t i = 0; i < 10; i++) {
@@ -38,12 +38,12 @@ void ShdTmp36Sensor::publishTemperature() {
 
   dtostrf(temperature, 3, 1, message);
 
-  if (!mqttClient.connected()) {
+  if (!mqttConnected()) {
     timerCounter = 5999; // set close to 6000, so next time timer5ms() is called, it's trying again
     return;
   }
 
-  if (mqttClient.publish(pubTopic, message)) {
+  if (mqttPublish(pubTopic, message)) {
     #if DEBUG > 1
     Serial.print("Temperature published to ");
     Serial.print(pubTopic);
@@ -55,6 +55,15 @@ void ShdTmp36Sensor::publishTemperature() {
   }
 }
 
-void ShdTmp36Sensor::resubpub() {
+int ShdTmp36Sensor::adcMeasurement() {
+  double adcValue = 0;
+  for (uint8_t i = 0; i < OVERSAMPLING; i++) {
+    adcValue += analogRead(A0);
+  }
+  adcValue /= OVERSAMPLING;
+  return (int)adcValue;
+}
+
+void ShdTmp36Sensor::republish() {
   publishTemperature();
 }

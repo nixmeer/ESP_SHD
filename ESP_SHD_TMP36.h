@@ -1,7 +1,8 @@
 #ifndef ESP_SHD_TMP36_SENSOR
 #define ESP_SHD_TMP36_SENSOR
 
-#define PUBLISH_TIME_IN_MS 500
+#define PUBLISH_TIME_IN_MS 5000
+#define OVERSAMPLING 10
 
 extern "C" {
   #include "user_interface.h"
@@ -20,7 +21,8 @@ private:
   void publishTemperature();
   void timer5msHandler();
   int timerCounter;
-  void resubpub();
+  void republish();
+  int adcMeasurement();
 };
 
 #endif

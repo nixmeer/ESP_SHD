@@ -7,12 +7,11 @@ ShdDs18b20Sensor::ShdDs18b20Sensor(uint8_t _pin) : oneWire(_pin), DS18B20(&oneWi
 
   snprintf (pubTopic, 50, "%s/Temperature", name);
 
+  pinMode(_pin, INPUT_PULLUP);
+
   // debug output:
-  #if DEBUG > 0
   Serial.print("TMP: New temperature sensor registered. It publishes to ");
   Serial.println(pubTopic);
-  Serial.print();
-  #endif
 }
 
 bool ShdDs18b20Sensor::handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length){
@@ -40,12 +39,12 @@ void ShdDs18b20Sensor::publishTemperature() {
   }
   dtostrf(temperature, 3, 1, message);
 
-  if (!mqttClient.connected()) {
+  if (!mqttConnected()) {
     timerCounter = 5999; // set close to 6000, so next time timer5ms() is called, it's trying again
     return;
   }
 
-  if (mqttClient.publish(pubTopic, message)) {
+  if (mqttPublish(pubTopic, message)) {
     #if DEBUG > 1
     Serial.print("Temperature published to ");
     Serial.print(pubTopic);
@@ -60,6 +59,6 @@ void ShdDs18b20Sensor::publishTemperature() {
   timerCounter = 0;
 }
 
-void ShdDs18b20Sensor::resubpub() {
+void ShdDs18b20Sensor::republish() {
   publishTemperature();
 }
