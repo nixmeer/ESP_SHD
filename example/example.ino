@@ -8,11 +8,12 @@
 #include "ESP_SHD_Button.h"
 #include "ESP_SHD_PwmLight.h"
 #include "ESP_SHD_Sprinkler.h"
+#include "ESP_SHD_Relay.h"
 
 // activate Arduino OTA:
 #define OTA
 
-#define MODUL_NAME "testroom/detailedlication" // replace it with whatever fits your personal needs
+#define MODUL_NAME "testroom/detailedLocation" // replace it with whatever fits your personal needs
 
 void setup() {
   Serial.begin(115200);
@@ -52,6 +53,10 @@ void setup() {
   // Adding a sprinkler:
   new ShdSprinkler(12, false);
   // ShdSprinkler(uint8_t _pin, bool _lowActive);
+
+  // Adding a relay:
+  new ShdRelay(12, 100, false);
+  // ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive):
 }
 
 void loop() {
