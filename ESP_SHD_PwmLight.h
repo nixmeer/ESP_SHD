@@ -9,7 +9,7 @@ public:
 private:
   bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length);
   void timer5msHandler();
-  void resubpub();
+  void republish();
   void setBrightness(uint8_t _percentage);
   bool addIoInfo();
   bool lowActive;

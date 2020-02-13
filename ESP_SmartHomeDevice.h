@@ -2,7 +2,6 @@
 #define ESP_SMART_HOME_DEVICE_H
 
 #define TRY_RECONNECT_AFTER_MILLISECONDS 10000
-#define MAX_PWM_CHANNELS 5
 
 extern "C" {
 #include "user_interface.h"
@@ -14,7 +13,7 @@ extern "C" {
 #include "WiFiManager.h"
 
 #ifndef MAX_SHDS
-#define MAX_SHDS 8
+#define MAX_SHDS 10
 #endif
 
 #define DEBUG 0
@@ -26,7 +25,7 @@ public:
     static void init(char* _mqttServerAddress, uint16_t _port, char* _name);
     static void mqttCallback(char* _topic, unsigned char* _payload, unsigned int _length);
     static void loop();//void *pArg);
-    
+
 protected:
     virtual bool handleMqttRequest(char* _topic, unsigned char* _payload, uint16_t _length) = 0;
     virtual void timer5msHandler() = 0;
@@ -37,7 +36,7 @@ protected:
     static ESP_SmartHomeDevice* shds[MAX_SHDS];
     static char* name;
     static uint8_t registerPwm(uint8_t _pin);
-    
+
 private:
     static PubSubClient mqttClient;
     static uint8_t numberOfShds;

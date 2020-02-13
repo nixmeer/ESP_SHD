@@ -168,24 +168,6 @@ void ESP_SmartHomeDevice::mqttCallback(char* _topic, unsigned char* _payload, un
 void ESP_SmartHomeDevice::loop(){//void *pArg){
     uint32_t currentMicros = micros();
 
-    if (firstRun) {
-        if (firstRun) {
-            firstRun = false;
-            pwm_init(gammaCorrection[1001], pwmDutyInit, numberOfPwmPins, ioInfo);
-
-#if DEBUG > 0
-            Serial.print("SHD: PwmLight: Initialized PWM. pwmPeriod: ");
-            Serial.print(gammaCorrection[100]);
-            Serial.print(", pwmDutyInit[");
-            Serial.print(pwmNumber);
-            Serial.print("]: ");
-            Serial.print(pwmDutyInit[pwmNumber]);
-            Serial.print(", numberOfPwmPins: ");
-            Serial.println(numberOfPwmPins);
-#endif
-        }
-    }
-
     if (currentMicros - last1msTimer > 1000) {
         while (currentMicros - last1msTimer > 1000) {
             last1msTimer += 1000;
@@ -290,10 +272,4 @@ bool ESP_SmartHomeDevice::resubscribe() {
         subscribtion = subscribtion->next;
     }
     return true;
-}
-
-uint8_t ESP_SmartHomeDevice::registerPwm(uint8_t _pin) {
-    pwmDutyInit[pwmNumber] = 0;
-    pinMode(_pin, OUTPUT);
-    addIoInfo();
 }
