@@ -55,8 +55,8 @@ void setup() {
   // ShdSprinkler(uint8_t _pin, bool _lowActive);
 
   // Adding a relay:
-  new ShdRelay(12, 100, false);
-  // ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive):
+  new ShdRelay(12, 100, false, true);
+  // ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive, bool _valueAtBeginning);
 }
 
 void loop() {
