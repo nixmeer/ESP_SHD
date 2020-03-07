@@ -1,8 +1,8 @@
 #include "ESP_SHD_Relay.h"
-uint8_t ShdRelay::numberOfRelays = 0;
+uint8_t ShdRelay::relayCount = 0;
 
 
-ShdRelay::ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive) : pin(_pin), lowActive(_lowActive){
+ShdRelay::ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive, bool _valueAtBeginning) : pin(_pin), lowActive(_lowActive){
 
   relayCount++;
   relayNumber = relayCount;
@@ -10,11 +10,13 @@ ShdRelay::ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive)
   if (_millisBetweenToggle/5 > 0) {
     minCyclesBetweenToggles = _millisBetweenToggle/5;
   } else {
-    minCyclesBetweenToggles = 1;
+    minCyclesBetweenToggles = _valueAtBeginning;
   }
 
-  pinMode(pin, OUPUT);
-  digitalWrite(pin, disabled);
+  setPoint = true;
+
+  pinMode(pin, OUTPUT);
+  setOuput(setPoint);
   cycleCounterSinceLastToggle = 0;
 
   snprintf(subTopicSetStatus, 50, "%s/Relay/%d/setStatus", name, relayNumber);

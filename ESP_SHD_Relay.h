@@ -4,7 +4,7 @@
 
 class ShdRelay : public ESP_SmartHomeDevice {
 public:
-    ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive);
+    ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive, bool _valueAtBeginning);
 private:
     static uint8_t relayCount;
     uint8_t relayNumber;
