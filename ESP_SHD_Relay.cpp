@@ -10,7 +10,7 @@ ShdRelay::ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive,
   if (_millisBetweenToggle/5 > 0) {
     minCyclesBetweenToggles = _millisBetweenToggle/5;
   } else {
-    minCyclesBetweenToggles = _valueAtBeginning;
+    minCyclesBetweenToggles = 1;
   }
 
   setPoint = true;
