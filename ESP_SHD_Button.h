@@ -1,6 +1,7 @@
 #include "ESP_SmartHomeDevice.h"
 #include <FunctionalInterrupt.h>
 
+// #define DEBUG 10
 
 class ShdButton : public ESP_SmartHomeDevice {
 public:

@@ -31,7 +31,7 @@ ShdButton::ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, ui
   longClickObject = NULL;
 
   // debug output:
-  Serial.print("New button registered. It publishes to ");
+  Serial.print("BTN: New button registered. It publishes to ");
   Serial.print(pubTopic);
   Serial.println();
 }
@@ -57,7 +57,7 @@ void ShdButton::timer5msHandler(){
       if (singleClickCallback == NULL) {
         if (mqttPublish(pubTopic, "1")) {
           #if DEBUG > 1
-          Serial.print("Button event has been published to ");
+          Serial.print("BTN: Button event has been published to ");
           Serial.print(pubTopic);
           Serial.print(" at ");
           Serial.print(millis());
@@ -77,7 +77,7 @@ void ShdButton::timer5msHandler(){
       }
       if (mqttPublish(pubTopic, "2")) {
         #if DEBUG > 1
-        Serial.print("Button event has been published to ");
+        Serial.print("BTN: Button event has been published to ");
         Serial.print(pubTopic);
         Serial.print(" at ");
         Serial.print(millis());
@@ -89,7 +89,7 @@ void ShdButton::timer5msHandler(){
     } else if (clickCounter == 1 && currentlyClicked == true && currentMillis - firstClickTime > millisLongClick) {
       if (mqttPublish(pubTopic, "L")) {
         #if DEBUG > 1
-        Serial.print("Button event has been published to ");
+        Serial.print("BTN: Button event has been published to ");
         Serial.print(pubTopic);
         Serial.print(" at ");
         Serial.print(millis());
