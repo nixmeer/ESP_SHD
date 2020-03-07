@@ -17,7 +17,6 @@ ShdRelay::ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive,
 
   pinMode(pin, OUTPUT);
   setOuput(setPoint);
-  cycleCounterSinceLastToggle = 0;
 
   snprintf(subTopicSetStatus, 50, "%s/Relay/%d/setStatus", name, relayNumber);
   snprintf(pubTopicGetStatus, 50, "%s/Relay/%d/getStatus", name, relayNumber);
