@@ -13,7 +13,7 @@ ShdRelay::ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive,
     minCyclesBetweenToggles = 1;
   }
 
-  setPoint = true;
+  setPoint = _valueAtBeginning;
 
   pinMode(pin, OUTPUT);
   setOuput(setPoint);
