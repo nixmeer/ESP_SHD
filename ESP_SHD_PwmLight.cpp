@@ -39,7 +39,8 @@ ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInt
   snprintf (subTopicBrightness, 60, "%s/PwmLight/%d/setBrightness", name, numberOfPwmPins);
   snprintf (subTopicState, 60, "%s/PwmLight/%d/setStatus", name, numberOfPwmPins);
 
-  resubpub();
+  mqttSubscribe(this, subTopicBrightness);
+  mqttSubscribe(this, subTopicState);
 
   pwmDutyInit[pwmNumber] = 0;
   pinMode(pin, OUTPUT);
@@ -65,7 +66,7 @@ void ShdPwmLight::timer5msHandler() {
   // initialize ESP8266_new_pwm, if this is the first call of timer5msHandler
   if (firstRun) {
     firstRun = false;
-    pwm_init(gammaCorrection[100], pwmDutyInit, numberOfPwmPins, ioInfo);
+    pwm_init(gammaCorrection[101], pwmDutyInit, numberOfPwmPins, ioInfo);
 
     #if DEBUG > 0
     Serial.print("SHD: PwmLight: Initialized PWM. pwmPeriod: ");
@@ -159,7 +160,6 @@ bool ShdPwmLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint1
   }
 }
 
-
 void ShdPwmLight::setBrightness(uint8_t _percentage){
   if (_percentage < 0 || _percentage > 100) {
     return;
@@ -167,9 +167,9 @@ void ShdPwmLight::setBrightness(uint8_t _percentage){
   if (_percentage > 0) {
     // save every percentage greater 0 for restoring after turning the light off and on
     lastBrightnessGreaterZero = _percentage;
-    mqttClient.publish(pubTopicState, "1");
+    mqttPublish(pubTopicState, "1");
   } else {
-    mqttClient.publish(pubTopicState, "0");
+    mqttPublish(pubTopicState, "0");
   }
 
   // save new set point
@@ -178,33 +178,23 @@ void ShdPwmLight::setBrightness(uint8_t _percentage){
   // publish new brightness
   char payload[5];
   snprintf (payload, 5, "%d", setPoint);
-  mqttClient.publish(pubTopicBrightness, payload);
+  mqttPublish(pubTopicBrightness, payload);
 
   // start fading process:
   flankOver = false;
 }
 
-void ShdPwmLight::resubpub(){
-  mqttClient.subscribe(subTopicBrightness, 0);
-  #if DEBUG > 0
-  Serial.print("SHD: PwmLight subscribed to ");
-  Serial.println(subTopicBrightness);
-  #endif
-
-  mqttClient.subscribe(subTopicState, 0);
-  #if DEBUG > 0
-  Serial.print("SHD: PwmLight subscribed to ");
-  Serial.println(subTopicState);
-  #endif
+void ShdPwmLight::republish(){
 
   if (currentBrightness != 0) {
-    mqttClient.publish(pubTopicState, "1");
+    mqttPublish(pubTopicState, "1");
   } else {
-    mqttClient.publish(pubTopicState, "0");
+    mqttPublish(pubTopicState, "0");
   }
+
   char payload[5];
   snprintf (payload, 5, "%d", setPoint);
-  mqttClient.publish(pubTopicBrightness, payload);
+  mqttPublish(pubTopicBrightness, payload);
 
 }
 
