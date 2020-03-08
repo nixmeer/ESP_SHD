@@ -1,5 +1,5 @@
 # ESP_SmartHomeDevice
-Keep it simple and stupid. Everyone should be able to build his or her smart home device (SHD). 
+Keep it simple and stupid. Everyone should be able to build his or her smart home device (SHD).
 ## What this project is supposed to do:
 This code runs on ESP8266 and is optimized to work together with [HomeBridge](https://github.com/nfarina/homebridge) and [mqttthing](https://github.com/arachnetech/homebridge-mqttthing)
 - [x] create an easy to use platform that uses wifi and mqtt to talk to [HomeBridge](https://github.com/nfarina/homebridge)
@@ -11,7 +11,7 @@ This code runs on ESP8266 and is optimized to work together with [HomeBridge](ht
 - [x] Motion sensors
 - [x] PWM light
 - [x] Sprinkler
-- [ ] Relay/Switch
+- [x] Relay/Switch
 ## Libraries used
 - [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino)
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary
@@ -48,7 +48,9 @@ Call `new ShdWs2812bStrip(uint16_t _firstLed, uint16_t _lastLed, uint16_t _ignit
 ShdWs2812bStrip subscribes to `_name/Lamp/_sectionNumber/setColor` and `_name/Lamp/_sectionNumber/setStatus`. `_sectionNumber`is increased for every new section starting at 1.
 ShdWs2812bStrip publishes its status (0 and 1) to `_name/Lamp/_sectionNumber/getStatus`, its color to `_name/Lamp/_sectionNumber/getColor` and publishes its brightness to `_name/Lamp/_sectionNumber/getBrightness`.
 ### Button
-To add a new button, call `new ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)`. It publishes to `_name/Button/_buttonNumber`. `_buttonNumber` is increased for every new button starting at 1.
+To add a new button, call `new ShdButton(uint8_t _pin, bool _lowActive, uint32_t _millisDebounce, uint32_t _millisLongClick, uint32_t _millisMultiClick)`. It publishes to `_name/Button/_buttonNumber`. It detects single clicks ("1"), double clicks("2") and long presses ("L"). `_buttonNumber` is increased for every new button starting at 1.
+### Relay
+To ad a new relay, use `new ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive)`. It subscribes `_name/Relay/_relayNumber/setStatus` where `_name` is the device name and `_relayNumber` counts the created relays starting at 1. It publishes its status to `_name/Relay/_relayNumber/getStatus`. `_millisBetweenToggle` sets the minimum time between to toggles avoiding the relay to be switched to quickly.
 # Hardware
 This repository contains the eagle and gerber files of the first generation SHD hardware. The PCBs can be ordered from jlcpcb.com or any other pcb manufacturer. The following parts are necessary for full assembly:
 - ESP12f module
