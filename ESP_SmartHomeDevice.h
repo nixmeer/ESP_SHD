@@ -55,10 +55,6 @@ private:
     static void reconnectMqtt(IPAddress _mqttServerAddress, uint16_t _port);
     static void reconnectMqtt(const char* _mqttServerAddress, uint16_t _port);
     static bool resubscribe();
-    static bool firstRun;
-    static uint8_t numberOfPwmPins;
-    static uint32_t pwmDutyInit[MAX_PWM_CHANNELS];
-    static uint32_t ioInfo[MAX_PWM_CHANNELS][3];
 };
 
 struct mqttSubscription {

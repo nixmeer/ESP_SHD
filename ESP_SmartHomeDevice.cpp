@@ -14,10 +14,6 @@ bool ESP_SmartHomeDevice::useMdns = false;
 char* ESP_SmartHomeDevice::mqttServerAddress;
 uint16_t ESP_SmartHomeDevice::port;
 void* ESP_SmartHomeDevice::lastSubscription = NULL;
-bool ESP_SmartHomeDevice::firstRun = true;
-uint8_t ESP_SmartHomeDevice::numberOfPwmPins = 0;
-uint32_t ESP_SmartHomeDevice::pwmDutyInit[MAX_PWM_CHANNELS];
-uint32_t ESP_SmartHomeDevice::ioInfo[MAX_PWM_CHANNELS][3];
 
 ESP_SmartHomeDevice::ESP_SmartHomeDevice(){
     if (numberOfShds < MAX_SHDS-1) {
