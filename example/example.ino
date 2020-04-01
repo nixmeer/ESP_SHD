@@ -9,6 +9,7 @@
 #include "ESP_SHD_PwmLight.h"
 #include "ESP_SHD_Sprinkler.h"
 #include "ESP_SHD_Relay.h"
+#include "ESP_SHD_DHT22.h"
 
 // activate Arduino OTA:
 #define OTA
@@ -57,6 +58,10 @@ void setup() {
   // Adding a relay:
   new ShdRelay(12, 100, false, true);
   // ShdRelay(uint8_t _pin, uint32_t _millisBetweenToggle, bool _lowActive, bool _valueAtBeginning);
+
+  // Adding a DHT-Sensor:
+  new ShdDht22Sensor(13, 30, 22);
+  // ShdDht22Sensor(uint8_t _pin, uint32_t _intervalS, uint8_t _dhtType);
 }
 
 void loop() {
