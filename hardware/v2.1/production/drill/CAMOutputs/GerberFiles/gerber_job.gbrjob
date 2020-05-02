@@ -1,0 +1,24 @@
+{
+    "Header": {
+        "Comment": "All values are metric (mm)",
+        "CreationDate": "2020-05-02T07:52:16Z",
+        "GenerationSoftware": {
+            "Application": "EAGLE",
+            "Vendor": "Autodesk",
+            "Version": "9.5.2"
+        },
+        "Part": "Single"
+    },
+    "Overall": {
+        "BoardThickness": 1.57,
+        "LayerNumber": 2,
+        "Name": {
+            "ProjectId": "shd_v2.0_double"
+        },
+        "Owner": "Jan Theiss <jantheiss@me.com>",
+        "Size": {
+            "X": 80,
+            "Y": 87.5
+        }
+    }
+}
