@@ -3,8 +3,10 @@
 
 #define TRY_RECONNECT_AFTER_MILLISECONDS 10000
 
+#define MAX_PWM_CHANNELS 10
+
 extern "C" {
-#include "user_interface.h"
+  #include "user_interface.h"
 }
 #include "PubSubClient.h"
 #include <ESP8266WiFi.h>
@@ -17,6 +19,9 @@ extern "C" {
 #endif
 
 #define DEBUG 0
+
+struct pwm;
+struct mqttSubscription;
 
 class ESP_SmartHomeDevice {
 public:
@@ -32,10 +37,11 @@ protected:
     virtual void republish() = 0;
     static bool mqttPublish(char* _topic, const char* _payload);
     static bool mqttConnected();
-    static void mqttSubscribe(ESP_SmartHomeDevice* _subscriber, char* _topic);
+    static bool mqttSubscribe(ESP_SmartHomeDevice* _subscriber, char* _topic);
     static ESP_SmartHomeDevice* shds[MAX_SHDS];
     static char* name;
-    static uint8_t registerPwm(uint8_t _pin);
+    static int8_t registerPwmPin(ESP_SmartHomeDevice* _owner, uint8_t _pin, bool _lowActive);
+    static bool setPwmPercentage(ESP_SmartHomeDevice* _owner, uint8_t _pwmNumber, uint8_t _percentage);
 
 private:
     static PubSubClient mqttClient;
@@ -47,7 +53,7 @@ private:
     static char * mqttServerAddress;
     static uint16_t port;
     static bool useMdns;
-    static void* lastSubscription;
+    static mqttSubscription* lastSubscription;
     static uint32_t lastMqttLoop;
     static void reconnect();
     static bool connectWifi();
@@ -55,12 +61,30 @@ private:
     static void reconnectMqtt(IPAddress _mqttServerAddress, uint16_t _port);
     static void reconnectMqtt(const char* _mqttServerAddress, uint16_t _port);
     static bool resubscribe();
+
+    static pwm* lastPwm;
+    static uint32_t pwmDutyInit[MAX_PWM_CHANNELS];
+    static uint32_t ioInfo[MAX_PWM_CHANNELS][3];
+    static uint16_t gammaCorrection[101];
+    static uint8_t numberOfPwms;
+    static bool firstRun;
+    static void firstRunFunction();
+    static int8_t addIoInfo(uint8_t _pin);
+    static bool setPwmDuty(ESP_SmartHomeDevice* _owner, int8_t _pwmNumber, uint8_t _value);
 };
 
 struct mqttSubscription {
     mqttSubscription* next;
     ESP_SmartHomeDevice* subscriber;
     char* topic;
+};
+
+struct pwm {
+public:
+  pwm* next;
+  ESP_SmartHomeDevice* owner;
+  uint8_t pin, pwmNumber;
+  bool lowActive;
 };
 
 #endif

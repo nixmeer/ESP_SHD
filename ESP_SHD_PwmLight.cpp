@@ -1,29 +1,7 @@
 #include "ESP_SHD_PwmLight.h"
-#include "pwm.h"
-
-bool ShdPwmLight::firstRun = true;
-uint8_t ShdPwmLight::numberOfPwmPins = 0;
-uint32_t ShdPwmLight::pwmDutyInit[MAX_PWM_CHANNELS];
-uint32_t ShdPwmLight::ioInfo[MAX_PWM_CHANNELS][3];
-uint16_t ShdPwmLight::gammaCorrection[101] = {
-  	0, 1, 4, 10, 20, 33, 51, 72,
-  	98, 129, 164, 204, 250, 300, 356, 417,
-  	484, 557, 635, 719, 809, 905, 1007, 1115,
-  	1230, 1351, 1479, 1613, 1753, 1901, 2055, 2216,
-  	2384, 2559, 2741, 2929, 3126, 3329, 3539, 3757,
-  	3983, 4215, 4456, 4703, 4959, 5222, 5493, 5771,
-  	6057, 6352, 6654, 6964, 7282, 7608, 7942, 8285,
-  	8635, 8994, 9361, 9736, 10120, 10512, 10913, 11322,
-  	11740, 12166, 12600, 13044, 13496, 13957, 14427, 14905,
-  	15392, 15888, 16393, 16907, 17430, 17962, 18504, 19054,
-  	19613, 20181, 20759, 21346, 21942, 22548, 23162, 23787,
-  	24420, 25063, 25715, 26377, 27049, 27730, 28420, 29121,
-  	29830, 30550, 31279, 32018, 32767
-};
 
 ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength){
-  pwmNumber = numberOfPwmPins;
-  numberOfPwmPins++;
+  bool success = true;
   pin = _pin;
   lowActive = _lowActive;
   millisUpdateInterval = _millisUpdateInterval;
@@ -34,26 +12,38 @@ ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInt
   lastBrightnessGreaterZero = 100;
   currentBrightness = setPoint;
 
-  snprintf (pubTopicBrightness, 60, "%s/PwmLight/%d/getBrightness", name, numberOfPwmPins);
-  snprintf (pubTopicState, 60, "%s/PwmLight/%d/getStatus", name, numberOfPwmPins);
-  snprintf (subTopicBrightness, 60, "%s/PwmLight/%d/setBrightness", name, numberOfPwmPins);
-  snprintf (subTopicState, 60, "%s/PwmLight/%d/setStatus", name, numberOfPwmPins);
+  int8_t _pwmNumber = registerPwmPin(this, pin, lowActive);
+  if (_pwmNumber != -1) {
+    pwmNumber = _pwmNumber;
+  } else {
+    success = false;
+  }
 
-  mqttSubscribe(this, subTopicBrightness);
-  mqttSubscribe(this, subTopicState);
+  snprintf (pubTopicBrightness, 60, "%s/PwmLight/%d/getBrightness", name, pwmNumber);
+  snprintf (pubTopicState, 60, "%s/PwmLight/%d/getStatus", name, pwmNumber);
+  snprintf (subTopicBrightness, 60, "%s/PwmLight/%d/setBrightness", name, pwmNumber);
+  snprintf (subTopicState, 60, "%s/PwmLight/%d/setStatus", name, pwmNumber);
 
-  pwmDutyInit[pwmNumber] = 0;
-  pinMode(pin, OUTPUT);
-  addIoInfo();
+  if (!mqttSubscribe(this, subTopicBrightness)) {
+    success = false;
+  }
+  if (!mqttSubscribe(this, subTopicState)) {
+    success = false;
+  }
+
 
   // debug output:
-  Serial.print("PWM: New pwm light ");
-  Serial.print(numberOfPwmPins);
-  Serial.print(" registered. It subscribed to ");
-  Serial.print(subTopicBrightness);
-  Serial.print(" and ");
-  Serial.print(subTopicState);
-  Serial.println();
+  if (success) {
+    Serial.print("PWM: New pwm light ");
+    Serial.print(pwmNumber);
+    Serial.print(" registered. It subscribed to ");
+    Serial.print(subTopicBrightness);
+    Serial.print(" and ");
+    Serial.print(subTopicState);
+    Serial.println();
+  } else {
+    Serial.print("PWM: Something went wrong.");
+  }
 }
 
 void ShdPwmLight::timer5msHandler() {
@@ -61,23 +51,6 @@ void ShdPwmLight::timer5msHandler() {
   // return, if this light is not changing its brightness
   if (flankOver) {
     return;
-  }
-
-  // initialize ESP8266_new_pwm, if this is the first call of timer5msHandler
-  if (firstRun) {
-    firstRun = false;
-    pwm_init(gammaCorrection[101], pwmDutyInit, numberOfPwmPins, ioInfo);
-
-    #if DEBUG > 0
-    Serial.print("SHD: PwmLight: Initialized PWM. pwmPeriod: ");
-    Serial.print(gammaCorrection[100]);
-    Serial.print(", pwmDutyInit[");
-    Serial.print(pwmNumber);
-    Serial.print("]: ");
-    Serial.print(pwmDutyInit[pwmNumber]);
-    Serial.print(", numberOfPwmPins: ");
-    Serial.println(numberOfPwmPins);
-    #endif
   }
 
   uint32_t currentMillis = millis();
@@ -115,23 +88,10 @@ void ShdPwmLight::timer5msHandler() {
 
     #if DEBUG > 3
     Serial.print(". Percentage: ");
-    Serial.print(currentBrightness);
+    Serial.println(currentBrightness);
     #endif
-    if (lowActive) {
-      #if DEBUG > 3
-      Serial.print(". Value: ");
-      Serial.println(gammaCorrection[100] - gammaCorrection[currentBrightness]);
-      #endif
-      pwm_set_duty(gammaCorrection[100] - gammaCorrection[currentBrightness], pwmNumber);
-      pwm_start();
-    } else {
-        #if DEBUG > 3
-      Serial.print(". Value: ");
-      Serial.println(gammaCorrection[currentBrightness]);
-      #endif
-      pwm_set_duty(gammaCorrection[currentBrightness], pwmNumber);
-      pwm_start();
-    }
+
+    setPwmPercentage(this, pwmNumber, currentBrightness);
   }
 }
 
@@ -196,59 +156,4 @@ void ShdPwmLight::republish(){
   snprintf (payload, 5, "%d", setPoint);
   mqttPublish(pubTopicBrightness, payload);
 
-}
-
-bool ShdPwmLight::addIoInfo(){
-    switch (pin) {
-      case 2:
-        ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_GPIO2_U;
-        ioInfo[pwmNumber][1] = FUNC_GPIO2;
-        ioInfo[pwmNumber][2] = 2;
-        break;
-
-      case 3:
-        ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_U0RXD_U;
-        ioInfo[pwmNumber][1] = FUNC_GPIO3;
-        ioInfo[pwmNumber][2] = 3;
-        break;
-
-      case 4:
-        ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_GPIO4_U;
-        ioInfo[pwmNumber][1] = FUNC_GPIO4;
-        ioInfo[pwmNumber][2] = 4;
-        break;
-
-      case 5:
-        ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_GPIO5_U;
-        ioInfo[pwmNumber][1] = FUNC_GPIO5;
-        ioInfo[pwmNumber][2] = 5;
-        break;
-
-      case 10:
-        ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_SD_DATA3_U;
-        ioInfo[pwmNumber][1] = FUNC_GPIO10;
-        ioInfo[pwmNumber][2] = 10;
-        break;
-
-      case 12:
-        ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_MTDI_U;
-        ioInfo[pwmNumber][1] = FUNC_GPIO12;
-        ioInfo[pwmNumber][2] = 12;
-        break;
-
-      case 13:
-        ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_MTCK_U;
-        ioInfo[pwmNumber][1] = FUNC_GPIO13;
-        ioInfo[pwmNumber][2] = 13;
-        break;
-
-      case 14:
-        ioInfo[pwmNumber][0] = PERIPHS_IO_MUX_MTMS_U;
-        ioInfo[pwmNumber][1] = FUNC_GPIO14;
-        ioInfo[pwmNumber][2] = 14;
-        break;
-
-      default:
-        break;
-    }
 }
