@@ -6,7 +6,7 @@
 #include "ESP_SHD_DS18B20.h"
 #include "ESP_SHD_WS2812bStrip.h"
 #include "ESP_SHD_Button.h"
-#include "ESP_SHD_PwmLight.h"
+#include "ESP_SHD_PwmSingleColorLight.h"
 #include "ESP_SHD_Sprinkler.h"
 #include "ESP_SHD_Relay.h"
 #include "ESP_SHD_DHT22.h"
@@ -27,8 +27,8 @@ void setup() {
   ESP_SmartHomeDevice::init(MODUL_NAME);
 
   // Adding a PwmLight:
-  new ShdPwmLight(12, true, 25, 1000);
-  // ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength);
+  new ShdPwmSingleColorLight(12, true, 25, 1000);
+  // ShdPwmSingleColorLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength);
 
   // Adding a motion sensor:
   new ShdMotionSensor(5); // standard pin: 5, old pin: 10
@@ -62,6 +62,9 @@ void setup() {
   // Adding a DHT-Sensor:
   new ShdDht22Sensor(13, 30, 22);
   // ShdDht22Sensor(uint8_t _pin, uint32_t _intervalS, uint8_t _dhtType);
+
+  // Adding a PWM light with temperature:
+  new ShdPwmTemperatureLight(2, 3, false, 20, 500);
 }
 
 void loop() {

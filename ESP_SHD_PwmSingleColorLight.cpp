@@ -1,6 +1,6 @@
-#include "ESP_SHD_PwmLight.h"
+#include "ESP_SHD_PwmSingleColorLight.h"
 
-ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength){
+ShdPwmSingleColorLight::ShdPwmSingleColorLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInterval, uint16_t _flankLength){
   bool success = true;
   pin = _pin;
   lowActive = _lowActive;
@@ -19,10 +19,10 @@ ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInt
     success = false;
   }
 
-  snprintf (pubTopicBrightness, 60, "%s/PwmLight/%d/getBrightness", name, pwmNumber);
-  snprintf (pubTopicState, 60, "%s/PwmLight/%d/getStatus", name, pwmNumber);
-  snprintf (subTopicBrightness, 60, "%s/PwmLight/%d/setBrightness", name, pwmNumber);
-  snprintf (subTopicState, 60, "%s/PwmLight/%d/setStatus", name, pwmNumber);
+  snprintf(pubTopicBrightness, 60, "%s/PwmLight/%d/getBrightness", name, pwmNumber);
+  snprintf(pubTopicState, 60, "%s/PwmLight/%d/getStatus", name, pwmNumber);
+  snprintf(subTopicBrightness, 60, "%s/PwmLight/%d/setBrightness", name, pwmNumber);
+  snprintf(subTopicState, 60, "%s/PwmLight/%d/setStatus", name, pwmNumber);
 
   if (!mqttSubscribe(this, subTopicBrightness)) {
     success = false;
@@ -46,7 +46,7 @@ ShdPwmLight::ShdPwmLight(uint8_t _pin, bool _lowActive, uint8_t _millisUpdateInt
   }
 }
 
-void ShdPwmLight::timer5msHandler() {
+void ShdPwmSingleColorLight::timer5msHandler() {
 
   // return, if this light is not changing its brightness
   if (flankOver) {
@@ -91,11 +91,11 @@ void ShdPwmLight::timer5msHandler() {
     Serial.println(currentBrightness);
     #endif
 
-    setPwmPercentage(this, pwmNumber, currentBrightness);
+    setPwmPermill(this, pwmNumber, currentBrightness*10);
   }
 }
 
-bool ShdPwmLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint16_t _length){
+bool ShdPwmSingleColorLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint16_t _length){
   if (strcmp(_topic, subTopicState) == 0) {
     if (_payload[0] == 0x30) {
       #if DEBUG > 3
@@ -120,7 +120,7 @@ bool ShdPwmLight::handleMqttRequest(char *_topic, unsigned char *_payload, uint1
   }
 }
 
-void ShdPwmLight::setBrightness(uint8_t _percentage){
+void ShdPwmSingleColorLight::setBrightness(uint8_t _percentage){
   if (_percentage < 0 || _percentage > 100) {
     return;
   }
@@ -144,7 +144,7 @@ void ShdPwmLight::setBrightness(uint8_t _percentage){
   flankOver = false;
 }
 
-void ShdPwmLight::republish(){
+void ShdPwmSingleColorLight::republish(){
 
   if (currentBrightness != 0) {
     mqttPublish(pubTopicState, "1");

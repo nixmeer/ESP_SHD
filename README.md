@@ -3,13 +3,15 @@ Keep it simple and stupid. Everyone should be able to build his or her smart hom
 ## What this project is supposed to do:
 This code runs on ESP8266 and is optimized to work together with [HomeBridge](https://github.com/nfarina/homebridge) and [mqttthing](https://github.com/arachnetech/homebridge-mqttthing)
 - [x] create an easy to use platform that uses wifi and mqtt to talk to [HomeBridge](https://github.com/nfarina/homebridge)
+- [ ] print json-config-code for homebridge-mqttthing
 - [ ] create a webserver and a settings class that allow setup via GUI
 ## Supported devices
 - [x] WS2512b strips
 - [x] Stateless switches
 - [x] TMP36 sensors
 - [x] Motion sensors
-- [x] PWM light
+- [x] Single color PWM light
+- [x] Temperature PWM light
 - [x] Sprinkler
 - [x] Relay/Switch
 ## Libraries used

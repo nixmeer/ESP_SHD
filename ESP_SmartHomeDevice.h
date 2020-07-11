@@ -41,7 +41,7 @@ protected:
     static ESP_SmartHomeDevice* shds[MAX_SHDS];
     static char* name;
     static int8_t registerPwmPin(ESP_SmartHomeDevice* _owner, uint8_t _pin, bool _lowActive);
-    static bool setPwmPercentage(ESP_SmartHomeDevice* _owner, uint8_t _pwmNumber, uint8_t _percentage);
+    static bool setPwmPermill(ESP_SmartHomeDevice* _owner, uint8_t _pwmNumber, uint16_t _value);
 
 private:
     static PubSubClient mqttClient;
@@ -65,7 +65,7 @@ private:
     static pwm* lastPwm;
     static uint32_t pwmDutyInit[MAX_PWM_CHANNELS];
     static uint32_t ioInfo[MAX_PWM_CHANNELS][3];
-    static uint16_t gammaCorrection[101];
+    static uint16_t gammaCorrection[1001];
     static uint8_t numberOfPwms;
     static bool firstRun;
     static void firstRunFunction();
