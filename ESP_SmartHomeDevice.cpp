@@ -1,6 +1,6 @@
 #include "ESP_SmartHomeDevice.h"
 #include "pwm.h"
-#define DEBUG 0
+#define DEBUG 5
 
 ESP_SmartHomeDevice* ESP_SmartHomeDevice::shds[MAX_SHDS];
 PubSubClient ESP_SmartHomeDevice::mqttClient;
