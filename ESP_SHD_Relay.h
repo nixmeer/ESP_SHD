@@ -1,6 +1,7 @@
 #include "ESP_SmartHomeDevice.h"
 #include <FunctionalInterrupt.h>
 
+#define DEBUG 0
 
 class ShdRelay : public ESP_SmartHomeDevice {
 public:

@@ -18,7 +18,7 @@ extern "C" {
 #define MAX_SHDS 10
 #endif
 
-#define DEBUG 0
+#define DEBUG 5
 
 struct pwm;
 struct mqttSubscription;
