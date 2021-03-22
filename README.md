@@ -8,8 +8,10 @@ This code runs on ESP8266 and is optimized to work together with [HomeBridge](ht
 - [x] WS2512b strips
 - [x] Stateless switches
 - [x] TMP36 sensors
+- [x] DHT22 temperature and humidity sensors
 - [x] Motion sensors
-- [x] PWM light
+- [x] PWM single color light
+- [x] PWM temperature light
 - [x] Sprinkler
 - [x] Relay/Switch
 - [x] Window blinds
