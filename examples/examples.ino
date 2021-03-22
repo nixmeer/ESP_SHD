@@ -4,6 +4,7 @@
 // activate Arduino OTA:
 #define OTA
 
+// define module name (used for mqtt topics):
 #define MODUL_NAME "testroom/detailedLocation" // replace it with whatever fits your personal needs
 
 void setup() {
