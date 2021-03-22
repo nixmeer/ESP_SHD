@@ -1,15 +1,5 @@
-#include "PubSubClient.h"
 #include <ArduinoOTA.h>
-#include "ESP_SmartHomeDevice.h"
-#include "ESP_SHD_MotionSensor.h"
-#include "ESP_SHD_TMP36.h"
-#include "ESP_SHD_DS18B20.h"
-#include "ESP_SHD_WS2812bStrip.h"
-#include "ESP_SHD_Button.h"
-#include "ESP_SHD_PwmSingleColorLight.h"
-#include "ESP_SHD_Sprinkler.h"
-#include "ESP_SHD_Relay.h"
-#include "ESP_SHD_DHT22.h"
+#include "ESP_SHD.h"
 
 // activate Arduino OTA:
 #define OTA
@@ -64,7 +54,11 @@ void setup() {
   // ShdDht22Sensor(uint8_t _pin, uint32_t _intervalS, uint8_t _dhtType);
 
   // Adding a PWM light with temperature:
-  new ShdPwmTemperatureLight(2, 3, false, 20, 500);
+  new ShdPwmTemperatureLight(MODE_WARM_PWM_COLD_PWM, 2, 3, false, false, 20, 500);
+
+  // Adding a window cover with two relays:
+  new ShdWindowBlindRelay(4, 5, 35, false, 2, 3, false); 
+
 }
 
 void loop() {
