@@ -12,6 +12,7 @@ This code runs on ESP8266 and is optimized to work together with [HomeBridge](ht
 - [x] PWM light
 - [x] Sprinkler
 - [x] Relay/Switch
+- [x] Window blinds
 ## Libraries used
 - [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino)
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary
