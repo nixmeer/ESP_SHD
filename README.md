@@ -14,6 +14,7 @@ This code runs on ESP8266 and is optimized to work together with [HomeBridge](ht
 - [x] WS2512b strips
 - [x] Sprinkler
 - [x] Relay/Switch
+- [x] Window blinds
 ## Libraries and cores used
 - [Arduino core for ESP8266 WiFi chip](https://github.com/esp8266/Arduino) (v2.4.2)
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary (v2.7.0)
