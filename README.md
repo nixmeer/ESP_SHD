@@ -19,6 +19,7 @@ This code runs on ESP8266 and is optimized to work together with [HomeBridge](ht
 - [pubSubClient](https://github.com/knolleary/pubsubclient) by knolleary (v2.7.0)
 - [FastLED](https://github.com/FastLED/FastLED) by FastLED (v3.3.2)
 - [WiFiManager](https://github.com/tzapu/WiFiManager) by tzapu (v0.15.0)
+- [ESP8266_new_pwm](https://github.com/StefanBruens/ESP8266_new_pwm) by StefanBruens (included)
 ## Code Structure
 There is a separate class for each device. Every device is implemented as a child class of ESP_SmartHomeDevice. After initializing ESP_SmartHomeDevice, objects of these classes may be created. All of these objects use one common mqtt client provided by ESP_SmartHomeDevice. Each child class of ESP_SmartHomeDevice has to implement the following member functions:
 - `bool handleMqttRequest(char * _topic, unsigned char * _payload, uint16_t _length)` is being called after a request has been pushed to the mqtt client
