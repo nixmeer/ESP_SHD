@@ -3,11 +3,15 @@
 
 #include "ESP_SmartHomeDevice.h"
 
-#define TOPIC_LENGTH 60
+#define DEBUG 3
+#define TOPIC_LENGTH 100
 #define MQTT_PAYLOAD_BUFFER_SIZE 10
 #define DEBOUNCE_MS 500
-#define NUMBER_OF_LOGIC_CKECKS 10
-#define DEBUG 0
+#define NUMBER_OF_LOGIC_CHECKS 10
+#define MQTT_PUBLISH_INTERVAL_NOT_MOVING_TICKS 200*60
+#define MQTT_PUBLISH_INTERVAL_MOVING_TICKS 100
+#define OVERRUN_TICKS 2 * 200
+#define TICKS_BEFORE_MOVEMENT_CHANGE 100
 
 enum movementStatus { MOVING_UP, MOVING_DOWN, NOT_MOVING };
 
@@ -20,6 +24,7 @@ private:
     void republish();
     void timer5msHandler();
     static uint8_t windowBlindRelayCount;
+    uint8_t windowBlindRelayNumber;
 
     const uint8_t relayUpPin;
     const uint8_t relayDownPin;
@@ -45,11 +50,12 @@ private:
     uint16_t ticksSinceMovementChanged;
     uint16_t minTicksForMovementchange;
     void updateCurrentPositionTicks();
-    void setTargetPercentage(uint8_t _newTargetPosition);
+    void setTargetPercentage(int _newTargetPosition);
 
     void movementControl();
     movementStatus currentMovementStatus;
     movementStatus targetMovementStatus;
+    movementStatus lastMovementStatus;
     void updateOutputs();
     void setRelay(uint8_t _relayPin, bool _status);
 
@@ -64,6 +70,9 @@ private:
     void updateCurrentMovementStatus();
     void updateTargetMovementStatus();
     void processButtonStates();
+
+    void checkForPublishing();
+    uint16_t publishedTicksAgo;
 };
 
 #endif
