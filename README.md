@@ -8,6 +8,7 @@ This code runs on ESP8266 and is optimized to work together with [HomeBridge](ht
 ## Supported devices
 - [x] Stateless switches
 - [x] TMP36 sensors
+- [x] DHT22 temperature and humidity sensors
 - [x] Motion sensors
 - [x] Single color PWM light
 - [x] Temperature PWM light
@@ -31,7 +32,7 @@ There is a separate class for each device. Every device is implemented as a chil
 ESP_SmartHomeDevice::init(const char* _mqttServerAddress, uint16_t _port, char* _name);
 ESP_SmartHomeDevice::init(char* _name)
 ```
-Call `ESP_SmartHomeDevice::init(...)` to setup and initialize wifi and mqtt in the `setup()` function of your .ino file. If there is no known wifi network, a wifi access point will be created which let's you connect the ESP to a wifi network. If you use **one** local mqtt broker and it is discoverable via mDNS, call `ESP_SmartHomeDevice::init(char* _name)`. The shd then automatically connects to it. If it discovers 0 or more than one, it resets itself.
+Call `ESP_SmartHomeDevice::init(...)` to setup and initialize wifi and mqtt in the `setup()` function of your *.ino* file. If there is no known wifi network, a wifi access point will be created which lets you connect the ESP to a wifi network. If you use **one** local mqtt broker and it is discoverable via mDNS, call `ESP_SmartHomeDevice::init(char* _name)`. The SHD then automatically connects to it. If it discovers 0 or more than one, it resets itself.
 Now just create new devices using `new Shd...()`.
 MQTT topics do always begin with the `_name` parameter initialized here.
 ## Creating devices
