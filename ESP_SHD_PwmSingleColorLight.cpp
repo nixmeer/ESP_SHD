@@ -108,11 +108,16 @@ bool ShdPwmSingleColorLight::handleMqttRequest(char *_topic, unsigned char *_pay
       Serial.println("SHD: PwmLight: OFF");
       #endif
       setBrightness(0);
+      return true;
     } else if (_payload[0] == 0x31) {
       #if DEBUG > 3
       Serial.println("SHD: PwmLight: ON");
       #endif
       setBrightness(lastBrightnessGreaterZero);
+      return true;
+    } 
+    else {
+      return false;
     }
   } else if (strcmp(_topic, subTopicBrightness) == 0) {
     #if DEBUG > 3
@@ -121,6 +126,7 @@ bool ShdPwmSingleColorLight::handleMqttRequest(char *_topic, unsigned char *_pay
     Serial.println(" %");
     #endif
     setBrightness(atoi((char*)_payload));
+    return true;
   } else {
     return false;
   }

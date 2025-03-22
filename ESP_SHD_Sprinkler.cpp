@@ -1,6 +1,6 @@
 #include "ESP_SHD_Sprinkler.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 uint8_t ShdSprinkler::sprinklerCount = 0;
 
@@ -40,6 +40,7 @@ void ShdSprinkler::timer5msHandler() {
     if (tickCounter >= durationTicks) {
       targetStatus = false;
     }
+
     // update remaining duration:
     if (tickCounter - publishTickCounter > 30*200) {
       itoa((durationTicks-tickCounter)/200, buffer, 10);
@@ -135,8 +136,13 @@ bool ShdSprinkler::handleMqttRequest(char* _topic, byte* _payload, uint16_t _len
       #endif
     }
   } else if (strcmp(_topic, subTopicSetDuration) == 0) {
-    durationTicks = atoi((char*)_payload) * 200 / 60;
-    itoa(durationTicks*60/200, buffer, 10);
+    #if DEBUG > 3
+    Serial.print("SPRINKLER: set duration to ");
+    Serial.println((char*)_payload);
+    Serial.println();
+    #endif
+    durationTicks = atoi((char*)_payload) * 200 / 10;
+    itoa(durationTicks/200*10, buffer, 10);
     mqttPublish(pubTopicGetDuration, buffer);
     #if DEBUG > 0
     Serial.print("SPRINKLER: durationTicks: ");

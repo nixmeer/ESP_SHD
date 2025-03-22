@@ -8,7 +8,7 @@
 #define MAX_SHDS 10
 #endif
 
-#define DEBUG 5
+#define DEBUG 1
 
 #include "PubSubClient.h"
 #include <ESP8266WiFi.h>

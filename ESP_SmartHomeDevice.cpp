@@ -366,7 +366,9 @@ void ESP_SmartHomeDevice::loop(){//void *pArg){
 bool ESP_SmartHomeDevice::mqttPublish(char *_topic, const char *_payload) {
     if (mqttClient.connected()) {
         mqttClient.publish(_topic, _payload);
+        return true;
     }
+    return false;
 }
 
 bool ESP_SmartHomeDevice::mqttConnected() {
